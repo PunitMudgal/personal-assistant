@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Relay - Your Personal AI Assistant",
   description:
     "Relay is a personal AI assistant that reads your inbox, checks your calendar, and pulls up your notes — so you can just ask, instead of digging through five apps to find the answer.",
+  icons: {
+    icon: "/logo-white.png",
+  },
 };
 
 export default function RootLayout({
