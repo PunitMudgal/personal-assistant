@@ -1,0 +1,13 @@
+export { BentoSection } from "./bento-section";
+export { CompanyShowcase } from "./company-showcase";
+export { CTASection } from "./cta-section";
+export { FAQSection } from "./faq-section";
+export { FeatureSection } from "./feature-section";
+export { FooterSection } from "./footer-section";
+export { GrowthSection } from "./growth-section";
+export { HeroSection } from "./hero-section";
+export { HeroVideoSection } from "./hero-video-section";
+export { Navbar } from "./navbar";
+export { PricingSection } from "./pricing-section";
+export { QuoteSection } from "./quote-section";
+export { TestimonialSection } from "./testimonial-section";
