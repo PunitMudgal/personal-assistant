@@ -107,6 +107,8 @@ export function FeatureCardSocial() {
                 <Image
                   className="h-full w-full rounded-full object-cover"
                   src="https://avatar.vercel.sh/jack"
+                  width={24}
+                  height={24}
                   alt="jack"
                 />
               </div>
@@ -125,6 +127,8 @@ export function FeatureCardSocial() {
                 <Image
                   className="h-full w-full rounded-full object-cover"
                   src="https://avatar.vercel.sh/christina"
+                  width={24}
+                  height={24}
                   alt="christina"
                 />
               </div>
@@ -143,6 +147,8 @@ export function FeatureCardSocial() {
                 <Image
                   className="h-full w-full rounded-full object-cover"
                   src="https://avatar.vercel.sh/joshua"
+                  width={24}
+                  height={24}
                   alt="joshua"
                 />
               </div>

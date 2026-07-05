@@ -83,6 +83,8 @@ export function FeatureCardReply() {
               <Image
                 className="h-full w-full rounded-full object-cover"
                 src="https://avatar.vercel.sh/jane"
+                width={24}
+                height={24}
                 alt="jane"
               />
             </div>

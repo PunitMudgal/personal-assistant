@@ -1,4 +1,8 @@
 import React from "react";
+import { FeatureCardIntegration } from "../feature-card-integration";
+import { FeatureCardReply } from "../feature-card-reply";
+import { FeatureCardSocial } from "../feature-card-social";
+import { FeatureCardGraph } from "../feature-card-graph";
 
 const Feature = () => {
   return (
@@ -10,7 +14,12 @@ const Feature = () => {
           context into a chat box.
         </p>
       </div>
-      <div></div>
+      <div>
+        <FeatureCardIntegration />
+        {/* <FeatureCardReply /> */}
+        <FeatureCardSocial />
+        <FeatureCardGraph />
+      </div>
     </div>
   );
 };
