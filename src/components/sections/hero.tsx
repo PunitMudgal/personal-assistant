@@ -1,3 +1,5 @@
+"use client";
+
 import GetStarted from "../get-started";
 import Orb from "../Orb";
 

@@ -8,7 +8,7 @@ const GetStarted = () => {
         <span className="relative z-10 block px-6 py-3 rounded-2xl bg-neutral-950">
           <div className="relative z-10 flex items-center space-x-3">
             <span className="transition-all duration-500 group-hover:translate-x-1.5 group-hover:text-emerald-300">
-              Begin Journey
+              Get Started For Free
             </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
