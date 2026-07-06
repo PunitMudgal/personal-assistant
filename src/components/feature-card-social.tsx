@@ -2,6 +2,7 @@
 
 import { cubicBezier, motion } from "motion/react";
 import Image from "next/image";
+import logo from "../../public/logo-white.png";
 
 export function FeatureCardSocial() {
   const variant1 = {
@@ -90,7 +91,7 @@ export function FeatureCardSocial() {
   };
 
   return (
-    <div className="relative h-full w-full max-w-[32rem] mx-auto transform-gpu rounded-lg border bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] dark:bg-black dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] dark:[border:1px_solid_rgba(255,255,255,.1)] md:max-h-[500px]">
+    <div className="relative h-full w-full max-w-[32rem] mx-auto transform-gpu rounded-lg border bg-black [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] [border:1px_solid_rgba(255,255,255,.1)] md:max-h-[500px]">
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -98,15 +99,15 @@ export function FeatureCardSocial() {
         className="flex h-full w-full cursor-pointer flex-col items-start justify-between"
       >
         <div className="flex h-full w-full items-center justify-center rounded-t-xl bg-transparent p-10">
-          <motion.div className="flex h-[230px] w-full items-center justify-between gap-x-4">
+          <motion.div className="flex h-57.5 w-full items-center justify-between gap-x-4">
             <motion.div
               variants={variant1}
-              className="z-3 flex h-fit w-full  flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-400/20 bg-white p-5 px-2.5 transition-all duration-100 ease-linear dark:border-neutral-800 dark:bg-neutral-900"
+              className="z-3 flex h-fit w-full  flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-800 bg-neutral-900 p-5 px-2.5 transition-all duration-100 ease-linear"
             >
               <div className="h-8 w-8 rounded-full bg-pink-300">
                 <Image
                   className="h-full w-full rounded-full object-cover"
-                  src="https://avatar.vercel.sh/jack"
+                  src={logo}
                   width={24}
                   height={24}
                   alt="jack"
@@ -121,12 +122,12 @@ export function FeatureCardSocial() {
             </motion.div>
             <motion.div
               variants={variant2}
-              className="z-3 flex h-fit w-full flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-400/20 bg-white p-5 px-2.5 transition-all duration-100 ease-linear dark:border-neutral-800 dark:bg-neutral-900"
+              className="z-3 flex h-fit w-full flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-800 bg-neutral-900 p-5 px-2.5 transition-all duration-100 ease-linear"
             >
               <div className="h-8 w-8 rounded-full bg-pink-300">
                 <Image
                   className="h-full w-full rounded-full object-cover"
-                  src="https://avatar.vercel.sh/christina"
+                  src={logo}
                   width={24}
                   height={24}
                   alt="christina"
@@ -141,12 +142,12 @@ export function FeatureCardSocial() {
             </motion.div>
             <motion.div
               variants={variant3}
-              className="z-[3] flex h-fit w-full flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-400/20 bg-white p-5 px-2.5 transition-all duration-100 ease-linear dark:border-neutral-800 dark:bg-neutral-900"
+              className="z-[3] flex h-fit w-full flex-col items-center justify-between gap-x-2 gap-y-2 rounded-md border border-neutral-800 bg-neutral-900 p-5 px-2.5 transition-all duration-100 ease-linear"
             >
               <div className="h-8 w-8 rounded-full bg-pink-300">
                 <Image
                   className="h-full w-full rounded-full object-cover"
-                  src="https://avatar.vercel.sh/joshua"
+                  src={logo}
                   width={24}
                   height={24}
                   alt="joshua"
@@ -162,10 +163,11 @@ export function FeatureCardSocial() {
           </motion.div>
         </div>
 
-        <div className="flex w-full flex-col items-start border-t border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="text-xl font-semibold">Social</h2>
-          <p className="text-base font-normal text-neutral-500 dark:text-neutral-400">
-            Write once, share with your friends
+        <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
+          <h2 className="text-xl font-semibold">Actually remembers</h2>
+          <p className="text-base font-normal text-neutral-400">
+            Every conversation persists — ask about last week and Relay still
+            knows what you meant{" "}
           </p>
         </div>
       </motion.div>

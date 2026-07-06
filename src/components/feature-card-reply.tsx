@@ -2,6 +2,7 @@
 
 import { cubicBezier, motion } from "motion/react";
 import Image from "next/image";
+import logo from "../../public/logo-white.png";
 
 export function FeatureCardReply() {
   const variant1 = {
@@ -61,7 +62,7 @@ export function FeatureCardReply() {
   };
 
   return (
-    <div className="relative h-full w-full max-w-[32rem]  transform-gpu rounded-lg border bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] dark:bg-black dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
+    <div className="relative h-full w-full max-w-[32rem]  transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -73,16 +74,16 @@ export function FeatureCardReply() {
             variants={variant1}
             className="w-fit rounded-full border px-2 text-[15px]"
           >
-            Make it Pop ?
+            Ask, don't dig
           </motion.p>
           <motion.div
             variants={variant2}
-            className="flex max-w-[300px] items-start gap-x-2 rounded-lg border border-neutral-300 bg-white p-4 shadow-[0px_0px_40px_-25px_rgba(0,0,0,0.25)] dark:border-neutral-800 dark:bg-neutral-900"
+            className="flex max-w-[300px] items-start gap-x-2 rounded-lg border border-neutral-800 bg-neutral-900 p-4"
           >
             <div className="flex h-6 w-6 shrink-0 rounded-full bg-blue-500">
               <Image
                 className="h-full w-full rounded-full object-cover"
-                src="https://avatar.vercel.sh/jane"
+                src={logo}
                 width={24}
                 height={24}
                 alt="jane"
@@ -90,16 +91,17 @@ export function FeatureCardReply() {
             </div>
             <div>
               <h3 className="text-base font-semibold">Josh</h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              <p className="text-sm text-neutral-400">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
               </p>
             </div>
           </motion.div>
         </motion.div>
-        <div className="flex w-full flex-col items-start border-t border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="text-xl font-semibold">AI Co-Pilot</h2>
-          <p className="text-base font-normal text-neutral-500 dark:text-neutral-400">
-            Use AI to make your writing stand out
+        <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
+          <h2 className="text-xl font-semibold">Ask, don't dig</h2>
+          <p className="text-base font-normal text-neutral-400">
+            Relay reads your inbox and calendar so you get an answer, not five
+            tabs to check yourself
           </p>
         </div>
       </motion.div>

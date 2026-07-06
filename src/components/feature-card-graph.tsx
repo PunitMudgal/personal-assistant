@@ -54,7 +54,7 @@ export function FeatureCardGraph() {
   };
 
   return (
-    <div className="relative h-full w-full max-w-[32rem] mx-auto transform-gpu rounded-lg border bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] dark:bg-black dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
+    <div className="relative h-full w-full max-w-[32rem] mx-auto transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -62,7 +62,7 @@ export function FeatureCardGraph() {
         className="flex h-full w-full cursor-pointer flex-col items-start justify-between"
       >
         <div className="relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-xl bg-transparent p-10">
-          <div className="relative h-[150px] w-full cursor-pointer overflow-hidden rounded-xl border border-slate-200/50 bg-white dark:border-neutral-700/50 dark:bg-neutral-900">
+          <div className="relative h-[150px] w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-900">
             <motion.p
               variants={variant2}
               className="absolute left-5 top-5 w-fit text-[15px]"
@@ -97,10 +97,11 @@ export function FeatureCardGraph() {
             </motion.svg>
           </div>
         </div>
-        <div className="flex w-full flex-col items-start border-t border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="text-xl font-semibold">Growth</h2>
-          <p className="text-base font-normal text-neutral-500 dark:text-neutral-400">
-            Invest and watch your money grow
+        <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
+          <h2 className="text-xl font-semibold">Fast where it matters</h2>
+          <p className="text-base font-normal text-neutral-400">
+            A capable model for real answers, a faster one for the small stuff —
+            nothing feels laggy{" "}
           </p>
         </div>
       </motion.div>

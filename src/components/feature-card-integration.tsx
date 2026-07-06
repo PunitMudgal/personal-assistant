@@ -92,10 +92,8 @@ const Card = (card: { icon: JSX.Element; bg: JSX.Element }) => {
       animate={controls}
       className={cn(
         "relative size-20 cursor-pointer overflow-hidden rounded-2xl border p-4",
-        // light styles
-        "bg-white",
         // dark styles
-        "transform-gpu dark:bg-transparent dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]",
+        "transform-gpu bg-transparent [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]",
       )}
     >
       {card.icon}
@@ -119,7 +117,7 @@ export function FeatureCardIntegration() {
   const [randomTiles4] = useState(() => shuffleArray([...tiles]));
 
   return (
-    <div className="relative h-full w-full max-w-lg mx-auto transform-gpu rounded-lg border bg-white [box-shadow:0_0_0_1px_rgba(0,0,0,.03),0_2px_4px_rgba(0,0,0,.05),0_12px_24px_rgba(0,0,0,.05)] dark:bg-black dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-125">
+    <div className="relative h-full w-full max-w-lg mx-auto transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-125">
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -156,14 +154,15 @@ export function FeatureCardIntegration() {
                 <Card key={idx} {...review} />
               ))}
             </Marquee>
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-white dark:from-background"></div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-linear-to-l from-white dark:from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-linear-to-l from-background"></div>
           </div>
         </div>
-        <div className="flex w-full flex-col items-start border-t border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="text-xl font-semibold">Integrations</h2>
-          <p className="text-base font-normal text-neutral-500 dark:text-neutral-400">
-            Integrate with all your favourite apps
+        <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
+          <h2 className="text-xl font-semibold">Connected everywhere</h2>
+          <p className="text-base font-normal text-neutral-400">
+            Gmail, Calendar, and Notion — wired in through the same protocol
+            powering next-gen AI agents
           </p>
         </div>
       </motion.div>
