@@ -52,13 +52,23 @@ const tiles = [
   },
 ];
 
-const shuffleArray = (array: any[]) => {
+const createSeededRandom = (seed: number) => {
+  let value = seed;
+
+  return () => {
+    value = (value * 1664525 + 1013904223) % 4294967296;
+    return value / 4294967296;
+  };
+};
+
+const shuffleArray = <T,>(array: T[], seed: number) => {
+  const random = createSeededRandom(seed);
   let currentIndex = array.length,
     randomIndex;
   // While there remain elements to shuffle.
   while (currentIndex !== 0) {
     // Pick a remaining element.
-    randomIndex = Math.floor(Math.random() * currentIndex);
+    randomIndex = Math.floor(random() * currentIndex);
     currentIndex--;
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
@@ -79,7 +89,7 @@ const Card = (card: { icon: JSX.Element; bg: JSX.Element }) => {
     if (inView) {
       controls.start({
         opacity: 1,
-        transition: { delay: Math.random() * 2, ease: "easeOut", duration: 1 },
+        transition: { delay: 0.15, ease: "easeOut", duration: 1 },
       });
     }
   }, [controls, inView]);
@@ -111,10 +121,10 @@ export function FeatureCardIntegration() {
       },
     },
   };
-  const [randomTiles1] = useState(() => shuffleArray([...tiles]));
-  const [randomTiles2] = useState(() => shuffleArray([...tiles]));
-  const [randomTiles3] = useState(() => shuffleArray([...tiles]));
-  const [randomTiles4] = useState(() => shuffleArray([...tiles]));
+  const [randomTiles1] = useState(() => shuffleArray([...tiles], 1));
+  const [randomTiles2] = useState(() => shuffleArray([...tiles], 2));
+  const [randomTiles3] = useState(() => shuffleArray([...tiles], 3));
+  const [randomTiles4] = useState(() => shuffleArray([...tiles], 4));
 
   return (
     <div className="relative h-full w-full max-w-lg mx-auto transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-125">
