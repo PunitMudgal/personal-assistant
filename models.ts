@@ -14,12 +14,6 @@ const groq = createGroq({
     apiKey: process.env.GROQ_API_KEY
 })
 
-const primaryProvider = google("gemini-2.5-flash")
-const secondaryProvider = openrouter("google/gemma-4-31b-it:free")
-const tertiaryProvider = groq("llama-3.3-70b-versatile")
-
-export const modelProviders = {
-    primaryProvider,
-    secondaryProvider,
-    tertiaryProvider
-}
+export const primaryProvider = google("gemini-2.5-flash")
+export const secondaryProvider = openrouter("google/gemma-4-31b-it:free")
+export const tertiaryProvider = groq("llama-3.3-70b-versatile")
