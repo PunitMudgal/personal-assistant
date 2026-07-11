@@ -6,6 +6,7 @@ import {
   messages,
   memories,
   type Chat,
+  type Memory,
   type MessageRole,
 } from "./schema";
 
@@ -146,10 +147,33 @@ export async function updateChat(
   return updated ?? null;
 }
 
+// Memories
+export async function getMemoryById(id: string): Promise<Memory | null> {
+  const [memory] = await db
+    .select()
+    .from(memories)
+    .where(eq(memories.id, id))
+    .limit(1);
+  return memory ?? null;
+}
+
+/** Ownership-scoped read — prefer this over getMemoryById in request handlers. */
+export async function getMemoryByIdForUser(
+  id: string,
+  userId: string,
+): Promise<Memory | null> {
+  const [memory] = await db
+    .select()
+    .from(memories)
+    .where(and(eq(memories.id, id), eq(memories.userId, userId)))
+    .limit(1);
+  return memory ?? null;
+}
+
 export async function listMemoriesByUserId(
   userId: string,
   options?: { category?: string; activeOnly?: boolean; limit?: number },
-) {
+): Promise<Memory[]> {
   const activeOnly = options?.activeOnly ?? true;
   const limit = options?.limit ?? 50;
 
@@ -164,3 +188,95 @@ export async function listMemoriesByUserId(
     .orderBy(desc(memories.importance), desc(memories.updatedAt))
     .limit(limit);
 }
+
+export async function createMemory({
+  userId,
+  content,
+  category,
+  importance,
+  sourceChatId,
+  sourceMessageId,
+  metadata,
+}: {
+  userId: string;
+  content: string;
+  category?: string | null;
+  importance?: number;
+  sourceChatId?: string | null;
+  sourceMessageId?: string | null;
+  metadata?: Record<string, unknown>;
+}): Promise<Memory> {
+  const [memory] = await db
+    .insert(memories)
+    .values({
+      userId,
+      content,
+      category: category ?? null,
+      importance: importance ?? 0,
+      sourceChatId: sourceChatId ?? null,
+      sourceMessageId: sourceMessageId ?? null,
+      metadata: metadata ?? {},
+    })
+    .returning();
+
+  if (!memory) {
+    throw new Error("Failed to create memory");
+  }
+
+  return memory;
+}
+
+export async function updateMemory(
+  id: string,
+  userId: string,
+  data: {
+    content?: string;
+    category?: string | null;
+    importance?: number;
+    metadata?: Record<string, unknown>;
+    isActive?: boolean;
+    sourceChatId?: string | null;
+    sourceMessageId?: string | null;
+  },
+): Promise<Memory | null> {
+  const [updated] = await db
+    .update(memories)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(memories.id, id), eq(memories.userId, userId)))
+    .returning();
+
+  return updated ?? null;
+}
+
+/** Soft-delete: keeps the row for audit/history but hides it from active recall. */
+export async function deactivateMemory(
+  id: string,
+  userId: string,
+): Promise<Memory | null> {
+  return updateMemory(id, userId, { isActive: false });
+}
+
+/** Re-enable a previously deactivated memory. */
+export async function activateMemory(
+  id: string,
+  userId: string,
+): Promise<Memory | null> {
+  return updateMemory(id, userId, { isActive: true });
+}
+
+/** Permanent delete — prefer deactivateMemory unless the row must be removed. */
+export async function deleteMemory(
+  id: string,
+  userId: string,
+): Promise<Memory | null> {
+  const [deleted] = await db
+    .delete(memories)
+    .where(and(eq(memories.id, id), eq(memories.userId, userId)))
+    .returning();
+
+  return deleted ?? null;
+}
+
