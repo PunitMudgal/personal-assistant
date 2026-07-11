@@ -16,4 +16,4 @@ const groq = createGroq({
 
 export const primaryProvider = google("gemini-2.5-flash")
 export const secondaryProvider = openrouter("google/gemma-4-31b-it:free")
-export const tertiaryProvider = groq("llama-3.3-70b-versatile")
+export const tertiaryProvider = groq("llama-3.3-70b-versatile") // generate title 

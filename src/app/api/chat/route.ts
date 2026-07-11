@@ -3,7 +3,6 @@ import {
   convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  generateText,
   safeValidateUIMessages,
   streamText,
   type UIMessage,
@@ -14,6 +13,7 @@ import {
   appendToChatMessages,
   updateChat,
 } from "@/db/queries";
+import { generateTitle } from "./generate-title";
 
 export const maxDuration = 30;
 
