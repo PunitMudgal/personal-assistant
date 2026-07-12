@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { motion } from "motion/react";
+import { useSession } from "next-auth/react";
 
 import {
   Message,
@@ -14,18 +16,32 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ui/reasoning";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
-import { mockUser } from "@/lib/mock/user";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 type ChatMessageProps = {
   message: ChatMessageType;
 };
 
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name?.trim()) {
+    const parts = name.trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? "";
+    const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+    return (first + last).toUpperCase() || "U";
+  }
+  if (email?.trim()) {
+    return email.trim().slice(0, 2).toUpperCase();
+  }
+  return "U";
+}
+
 export function ChatMessage({ message }: ChatMessageProps) {
+  const { data: session } = useSession();
   const isUser = message.role === "user";
+  const userName = session?.user?.name ?? "You";
+  const userInitials = getInitials(session?.user?.name, session?.user?.email);
 
   return (
     <motion.div
@@ -37,17 +53,27 @@ export function ChatMessage({ message }: ChatMessageProps) {
         {/* Avatar */}
         {isUser ? (
           <Avatar size="sm" className="mt-1 shrink-0 bg-foreground text-background">
+            {session?.user?.image ? (
+              <AvatarImage src={session.user.image} alt={userName} />
+            ) : null}
             <AvatarFallback className="bg-foreground text-xs font-medium text-background">
-              {mockUser.initials}
+              {userInitials}
             </AvatarFallback>
           </Avatar>
         ) : (
-          <Image src="/logo-white.png" alt="Relay" width={84} height={28} priority className="h-6 w-auto object-contain invert dark:invert-0 dark:opacity-90" />
+          <Image
+            src="/logo-white.png"
+            alt="Relay"
+            width={84}
+            height={28}
+            priority
+            className="mt-1 h-6 w-auto object-contain invert dark:invert-0 dark:opacity-90"
+          />
         )}
 
         <div className="flex min-w-0 flex-col gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
-            {isUser ? mockUser.name : "Relay"}
+            {isUser ? userName : "Relay"}
           </span>
 
           {/* Reasoning (assistant only) */}

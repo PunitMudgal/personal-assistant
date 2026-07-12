@@ -1,8 +1,14 @@
 "use client";
 
-import { Brain, LogOut, Settings as SettingsIcon, UserCog } from "lucide-react";
+import {
+  Brain,
+  LogOut,
+  Settings as SettingsIcon,
+  UserCog,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,22 +20,42 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/app/theme-toggle";
-import { mockUser } from "@/lib/mock/user";
+import { signOutAction } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 
 type SidebarFooterProps = {
   collapsed: boolean;
 };
 
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name?.trim()) {
+    const parts = name.trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? "";
+    const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+    return (first + last).toUpperCase() || "U";
+  }
+  if (email?.trim()) {
+    return email.trim().slice(0, 2).toUpperCase();
+  }
+  return "U";
+}
+
 export function SidebarFooter({ collapsed }: SidebarFooterProps) {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const name = user?.name ?? "Relay user";
+  const email = user?.email ?? "";
+  const initials = getInitials(user?.name, user?.email);
+
   return (
     <div className="border-t border-border p-3">
-      {/* Quick nav */}
       <div className={cn("flex items-center gap-1", collapsed && "flex-col")}>
         <Button
           variant="ghost"
           size={collapsed ? "icon" : "sm"}
-          className={cn(!collapsed && "flex-1 justify-start gap-2 text-muted-foreground")}
+          className={cn(
+            !collapsed && "flex-1 justify-start gap-2 text-muted-foreground"
+          )}
           aria-label="Memory"
         >
           <Brain className="size-4" />
@@ -38,7 +64,9 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
         <Button
           variant="ghost"
           size={collapsed ? "icon" : "sm"}
-          className={cn(!collapsed && "flex-1 justify-start gap-2 text-muted-foreground")}
+          className={cn(
+            !collapsed && "flex-1 justify-start gap-2 text-muted-foreground"
+          )}
           aria-label="Settings"
         >
           <SettingsIcon className="size-4" />
@@ -49,7 +77,6 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
 
       {!collapsed && <Separator className="my-3" />}
 
-      {/* Profile */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -60,18 +87,23 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
             )}
           >
             <Avatar size="sm" className="bg-foreground text-background">
+              {user?.image ? (
+                <AvatarImage src={user.image} alt={name} />
+              ) : null}
               <AvatarFallback className="bg-foreground text-xs font-medium text-background">
-                {mockUser.initials}
+                {initials}
               </AvatarFallback>
             </Avatar>
             {!collapsed && (
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-foreground">
-                  {mockUser.name}
+                  {name}
                 </span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {mockUser.email}
-                </span>
+                {email ? (
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {email}
+                  </span>
+                ) : null}
               </span>
             )}
           </button>
@@ -83,8 +115,12 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
           className="w-56"
         >
           <DropdownMenuLabel className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">{mockUser.name}</span>
-            <span className="text-xs font-normal text-muted-foreground">{mockUser.email}</span>
+            <span className="text-sm font-medium text-foreground">{name}</span>
+            {email ? (
+              <span className="text-xs font-normal text-muted-foreground">
+                {email}
+              </span>
+            ) : null}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
@@ -96,7 +132,13 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
             Preferences
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={(event) => {
+              event.preventDefault();
+              void signOutAction();
+            }}
+          >
             <LogOut className="size-4" />
             Sign out
           </DropdownMenuItem>

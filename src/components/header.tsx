@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -14,6 +15,8 @@ const navLinks = [
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === "authenticated" && !!session?.user;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -76,54 +79,78 @@ const Header = () => {
               </Link>
             ))}
 
-            {/* Get Started + Sign In Buttons */}
+            {/* Get Started + Sign In / Open Chat */}
             <div className="ml-3 pl-3 border-l border-white/[0.06] flex items-center gap-3">
-              {/* Get Started CTA */}
-              <Link
-                href="/get-started"
-                className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
-              >
-                <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                  Get Started
-                  <svg
-                    className="ml-2 h-3.5 w-3.5 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {isAuthenticated ? (
+                <Link
+                  href="/chat"
+                  className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
+                >
+                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
+                    Open chat
+                    <svg
+                      className="ml-2 h-3.5 w-3.5 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </span>
-              </Link>
+                    <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
+                      Get Started
+                      <svg
+                        className="ml-2 h-3.5 w-3.5 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
+                      </svg>
+                    </span>
+                  </Link>
 
-              {/* Sign In Button */}
-              <Link
-                href="/sign-in"
-                className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
-              >
-                <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-40 group-hover:opacity-70 transition-opacity" />
-                <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl">
-                  Sign In
-                  <svg
-                    className="ml-2 h-3.5 w-3.5 text-neutral-400 transition-transform duration-300 group-hover:translate-x-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <Link
+                    href="/sign-in"
+                    className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </span>
-              </Link>
+                    <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-40 group-hover:opacity-70 transition-opacity" />
+                    <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl">
+                      Sign In
+                      <svg
+                        className="ml-2 h-3.5 w-3.5 text-neutral-400 transition-transform duration-300 group-hover:translate-x-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
 
@@ -169,7 +196,7 @@ const Header = () => {
             </Link>
           ))}
 
-          {/* Mobile Get Started + Sign In */}
+          {/* Mobile Get Started + Sign In / Open Chat */}
           <div
             className={`w-full max-w-xs mt-4 flex flex-col gap-3 transition-all duration-300 ${
               isMobileOpen
@@ -182,54 +209,79 @@ const Header = () => {
                 : "0ms",
             }}
           >
-            {/* Get Started CTA */}
-            <Link
-              href="/get-started"
-              onClick={() => setIsMobileOpen(false)}
-              className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl"
-            >
-              <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                Get Started
-                <svg
-                  className="ml-2 h-4 w-4 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {isAuthenticated ? (
+              <Link
+                href="/chat"
+                onClick={() => setIsMobileOpen(false)}
+                className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl"
+              >
+                <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
+                  Open chat
+                  <svg
+                    className="ml-2 h-4 w-4 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </span>
-            </Link>
+                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
+                    Get Started
+                    <svg
+                      className="ml-2 h-4 w-4 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </span>
+                </Link>
 
-            {/* Sign In */}
-            <Link
-              href="/sign-in"
-              onClick={() => setIsMobileOpen(false)}
-              className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full p-px shadow-2xl"
-            >
-              <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-50" />
-              <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl">
-                Sign In
-                <svg
-                  className="ml-2 h-4 w-4 text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <Link
+                  href="/sign-in"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full p-px shadow-2xl"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </span>
-            </Link>
+                  <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-50" />
+                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl">
+                    Sign In
+                    <svg
+                      className="ml-2 h-4 w-4 text-neutral-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </div>
