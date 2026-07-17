@@ -4,15 +4,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
 } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MotionConfig } from "motion/react";
-import type { Conversation } from "@/lib/types";
-import { mockConversations } from "@/lib/mock/conversations";
+
 import { Sidebar } from "@/components/app/sidebar/sidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useConversations } from "@/hooks/use-conversations";
+import type { Conversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type AppShellContextValue = {
@@ -20,9 +23,15 @@ type AppShellContextValue = {
   toggleCollapsed: () => void;
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
-  activeId: string | null;
-  setActiveId: (id: string | null) => void;
+  /** Chat id from `?id=` — null means a new empty chat. */
+  activeChatId: string | null;
+  openChat: (id: string) => void;
+  newChat: () => void;
+  /** Soft-set ?id= without remounting the chat page (used on first send). */
+  syncChatIdToUrl: (id: string) => void;
   activeConversation: Conversation | null;
+  conversations: Conversation[];
+  refreshConversations: () => Promise<void>;
 };
 
 const AppShellContext = createContext<AppShellContextValue | null>(null);
@@ -55,11 +64,13 @@ function useCollapsedPreference(): [boolean, () => void] {
   const collapsed = useSyncExternalStore(
     subscribeCollapsed,
     readCollapsed,
-    () => false // SSR snapshot
+    () => false,
   );
 
   const toggle = useCallback(() => {
-    const next = !(window.localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true");
+    const next = !(
+      window.localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true"
+    );
     window.localStorage.setItem(COLLAPSED_STORAGE_KEY, String(next));
     window.dispatchEvent(new Event(COLLAPSED_EVENT));
   }, []);
@@ -67,15 +78,58 @@ function useCollapsedPreference(): [boolean, () => void] {
   return [collapsed, toggle];
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  initialConversations,
+}: {
+  children: React.ReactNode;
+  initialConversations: Conversation[];
+}) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlChatId = searchParams.get("id");
+
+  // Soft URL updates (history.replaceState) don't update useSearchParams.
+  const [optimisticChatId, setOptimisticChatId] = useState<string | null>(null);
+  const activeChatId = urlChatId ?? optimisticChatId;
+
+  useEffect(() => {
+    setOptimisticChatId(null);
+  }, [urlChatId]);
+
   const [collapsed, toggleCollapsed] = useCollapsedPreference();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(mockConversations[0].id);
+  const { conversations, refresh: refreshConversations } = useConversations(
+    initialConversations,
+  );
 
   const activeConversation = useMemo(
-    () => mockConversations.find((c) => c.id === activeId) ?? null,
-    [activeId]
+    () =>
+      activeChatId
+        ? (conversations.find((c) => c.id === activeChatId) ?? null)
+        : null,
+    [conversations, activeChatId],
   );
+
+  const openChat = useCallback(
+    (id: string) => {
+      setOptimisticChatId(null);
+      router.push(`/chat?id=${id}`);
+      setMobileOpen(false);
+    },
+    [router],
+  );
+
+  const newChat = useCallback(() => {
+    setOptimisticChatId(null);
+    router.push("/chat");
+    setMobileOpen(false);
+  }, [router]);
+
+  const syncChatIdToUrl = useCallback((id: string) => {
+    window.history.replaceState(null, "", `/chat?id=${id}`);
+    setOptimisticChatId(id);
+  }, []);
 
   const value = useMemo<AppShellContextValue>(
     () => ({
@@ -83,39 +137,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       toggleCollapsed,
       mobileOpen,
       setMobileOpen,
-      activeId,
-      setActiveId,
+      activeChatId,
+      openChat,
+      newChat,
+      syncChatIdToUrl,
       activeConversation,
+      conversations,
+      refreshConversations,
     }),
-    [collapsed, toggleCollapsed, mobileOpen, activeId, activeConversation]
+    [
+      collapsed,
+      toggleCollapsed,
+      mobileOpen,
+      activeChatId,
+      openChat,
+      newChat,
+      syncChatIdToUrl,
+      activeConversation,
+      conversations,
+      refreshConversations,
+    ],
   );
-
-  const handleSelect = (id: string) => {
-    setActiveId(id);
-    setMobileOpen(false);
-  };
-
-  const handleNewChat = () => {
-    setActiveId(null);
-    setMobileOpen(false);
-  };
 
   return (
     <AppShellContext.Provider value={value}>
       <MotionConfig reducedMotion="user">
         <div className="flex h-dvh w-full overflow-hidden bg-background text-foreground">
-          {/* Desktop sidebar */}
           <aside className="hidden lg:block">
             <Sidebar
               collapsed={collapsed}
               onToggleCollapse={toggleCollapsed}
-              activeId={activeId}
-              onSelectConversation={handleSelect}
-              onNewChat={handleNewChat}
+              chatId={activeChatId}
+              conversations={conversations}
+              onSelectConversation={openChat}
+              onNewChat={newChat}
             />
           </aside>
 
-          {/* Mobile sidebar */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetContent
               side="left"
@@ -124,15 +182,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SheetTitle className="sr-only">Conversations</SheetTitle>
               <Sidebar
                 collapsed={false}
-                activeId={activeId}
-                onSelectConversation={handleSelect}
-                onNewChat={handleNewChat}
+                chatId={activeChatId}
+                conversations={conversations}
+                onSelectConversation={openChat}
+                onNewChat={newChat}
                 inSheet
               />
             </SheetContent>
           </Sheet>
 
-          <main className={cn("flex min-w-0 flex-1 flex-col")}>{children}</main>
+          <main className={cn("flex min-h-0 min-w-0 flex-1 flex-col")}>
+            {children}
+          </main>
         </div>
       </MotionConfig>
     </AppShellContext.Provider>

@@ -67,6 +67,7 @@ export async function POST(req: Request) {
   }
 
   const messages = validatedMessagesResult.data;
+  console.log("messages", messages);
 
   let chat = await getChatById(chatId);
   const mostRecentMessage = messages[messages.length - 1];
@@ -115,6 +116,8 @@ export async function POST(req: Request) {
         model: primaryProvider,
         messages: await convertToModelMessages(messages),
       });
+
+      console.log("result", result);
 
       writer.merge(
         result.toUIMessageStream({

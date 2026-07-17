@@ -9,16 +9,17 @@ import { SidebarSearch } from "@/components/app/sidebar/sidebar-search";
 import { SidebarSection } from "@/components/app/sidebar/sidebar-section";
 import { SidebarChatItem } from "@/components/app/sidebar/sidebar-chat-item";
 import { SidebarFooter } from "@/components/app/sidebar/sidebar-footer";
-import { mockConversations } from "@/lib/mock/conversations";
 import type { Conversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type SidebarProps = {
   collapsed: boolean;
   onToggleCollapse?: () => void;
-  activeId: string | null;
+  /** null = new chat (no ?id= in the URL). */
+  chatId: string | null;
+  conversations: Conversation[];
   onSelectConversation: (id: string) => void;
-  onNewChat?: () => void;
+  onNewChat: () => void;
   inSheet?: boolean;
 };
 
@@ -28,13 +29,25 @@ const COLLAPSED_WIDTH = 72;
 export function Sidebar({
   collapsed,
   onToggleCollapse,
-  activeId,
+  chatId,
+  conversations,
   onSelectConversation,
   onNewChat,
   inSheet,
 }: SidebarProps) {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<Conversation[]>(mockConversations);
+  const [favouriteIds, setFavouriteIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const items = useMemo(
+    () =>
+      conversations.map((c) => ({
+        ...c,
+        favourite: favouriteIds.has(c.id),
+      })),
+    [conversations, favouriteIds],
+  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,46 +55,38 @@ export function Sidebar({
     return items.filter(
       (c) =>
         c.title.toLowerCase().includes(q) ||
-        c.preview.toLowerCase().includes(q)
+        c.preview.toLowerCase().includes(q),
     );
   }, [items, query]);
 
-  const favourites = useMemo(
-    () => visible.filter((c) => c.favourite),
-    [visible]
-  );
-  const recent = useMemo(
-    () => visible.filter((c) => !c.favourite),
-    [visible]
-  );
+  const favourites = visible.filter((c) => c.favourite);
+  const recent = visible.filter((c) => !c.favourite);
 
-  const toggleFavourite = (id: string) => {
-    setItems((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, favourite: !c.favourite } : c
-      )
-    );
-  };
-
-  const handleNewChat = () => {
-    onNewChat?.();
-  };
+  function toggleFavourite(id: string) {
+    setFavouriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const hasResults = visible.length > 0;
+  const hasQuery = query.trim().length > 0;
 
   return (
     <motion.aside
       animate={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
       transition={{ type: "spring", stiffness: 320, damping: 34 }}
       className={cn(
-        "relative flex h-full shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar text-sidebar-foreground"
+        "relative flex h-full shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar text-sidebar-foreground",
       )}
     >
       <SidebarHeader
         collapsed={collapsed}
         inSheet={inSheet}
         onToggleCollapse={onToggleCollapse}
-        onNewChat={handleNewChat}
+        onNewChat={onNewChat}
       />
 
       <SidebarSearch value={query} onChange={setQuery} collapsed={collapsed} />
@@ -95,7 +100,7 @@ export function Sidebar({
                   <SidebarChatItem
                     key={c.id}
                     conversation={c}
-                    active={c.id === activeId}
+                    active={c.id === chatId}
                     collapsed={collapsed}
                     onSelect={onSelectConversation}
                     onToggleFavourite={toggleFavourite}
@@ -109,7 +114,7 @@ export function Sidebar({
                   <SidebarChatItem
                     key={c.id}
                     conversation={c}
-                    active={c.id === activeId}
+                    active={c.id === chatId}
                     collapsed={collapsed}
                     onSelect={onSelectConversation}
                     onToggleFavourite={toggleFavourite}
@@ -121,7 +126,9 @@ export function Sidebar({
         ) : (
           !collapsed && (
             <p className="px-2 py-6 text-center text-sm text-muted-foreground">
-              No chats found for &ldquo;{query}&rdquo;.
+              {hasQuery
+                ? `No chats found for “${query.trim()}”.`
+                : "No conversations yet. Start a new chat."}
             </p>
           )
         )}

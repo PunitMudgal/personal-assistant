@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { motion } from "motion/react";
 import { useSession } from "next-auth/react";
+import type { UIMessage } from "ai";
 
 import {
   Message,
@@ -17,12 +18,8 @@ import {
   ReasoningTrigger,
 } from "@/components/ui/reasoning";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { ChatMessage as ChatMessageType } from "@/lib/types";
+import { getMessageReasoning, getMessageText } from "@/lib/chat";
 import { cn } from "@/lib/utils";
-
-type ChatMessageProps = {
-  message: ChatMessageType;
-};
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name?.trim()) {
@@ -31,17 +28,17 @@ function getInitials(name?: string | null, email?: string | null): string {
     const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
     return (first + last).toUpperCase() || "U";
   }
-  if (email?.trim()) {
-    return email.trim().slice(0, 2).toUpperCase();
-  }
+  if (email?.trim()) return email.trim().slice(0, 2).toUpperCase();
   return "U";
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message }: { message: UIMessage }) {
   const { data: session } = useSession();
   const isUser = message.role === "user";
   const userName = session?.user?.name ?? "You";
   const userInitials = getInitials(session?.user?.name, session?.user?.email);
+  const text = getMessageText(message);
+  const reasoning = getMessageReasoning(message);
 
   return (
     <motion.div
@@ -50,9 +47,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <Message className="gap-3">
-        {/* Avatar */}
         {isUser ? (
-          <Avatar size="sm" className="mt-1 shrink-0 bg-foreground text-background">
+          <Avatar
+            size="sm"
+            className="mt-1 shrink-0 bg-foreground text-background"
+          >
             {session?.user?.image ? (
               <AvatarImage src={session.user.image} alt={userName} />
             ) : null}
@@ -76,37 +75,40 @@ export function ChatMessage({ message }: ChatMessageProps) {
             {isUser ? userName : "Relay"}
           </span>
 
-          {/* Reasoning (assistant only) */}
-          {!isUser && message.reasoning ? (
-            <Reasoning className="mb-1">
+          {!isUser && reasoning ? (
+            <Reasoning className="mb-1" isStreaming={reasoning.isStreaming}>
               <ReasoningTrigger className="text-xs text-muted-foreground">
                 Thought process
               </ReasoningTrigger>
               <ReasoningContent className="text-muted-foreground">
-                {message.reasoning}
+                {reasoning.text}
               </ReasoningContent>
             </Reasoning>
           ) : null}
 
-          <MessageContent
-            markdown={!isUser}
-            className={cn(
-              "max-w-2xl text-sm leading-relaxed",
-              isUser
-                ? "bg-primary text-primary-foreground rounded-2xl rounded-tl-sm"
-                : "prose-sm bg-secondary text-secondary-foreground rounded-2xl rounded-tl-sm dark:prose-invert"
-            )}
-          >
-            {message.content}
-          </MessageContent>
+          {text ? (
+            <MessageContent
+              markdown={!isUser}
+              className={cn(
+                "max-w-2xl text-sm leading-relaxed",
+                isUser
+                  ? "bg-primary text-primary-foreground rounded-2xl rounded-tl-sm"
+                  : "prose-sm bg-secondary text-secondary-foreground rounded-2xl rounded-tl-sm dark:prose-invert",
+              )}
+            >
+              {text}
+            </MessageContent>
+          ) : null}
 
-          {/* Actions (assistant only) */}
           {!isUser && (
             <MessageActions className="mt-1">
               <MessageAction tooltip="Copy">
                 <button
                   type="button"
                   aria-label="Copy"
+                  onClick={() => {
+                    if (text) void navigator.clipboard.writeText(text);
+                  }}
                   className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   <Copy className="size-3.5" />

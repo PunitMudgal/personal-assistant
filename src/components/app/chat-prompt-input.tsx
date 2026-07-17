@@ -14,14 +14,16 @@ type ChatPromptInputProps = {
   value: string;
   onValueChange: (value: string) => void;
   onSubmit: () => void;
+  isLoading?: boolean;
 };
 
 export function ChatPromptInput({
   value,
   onValueChange,
   onSubmit,
+  isLoading = false,
 }: ChatPromptInputProps) {
-  const canSend = value.trim().length > 0;
+  const canSend = value.trim().length > 0 && !isLoading;
 
   return (
     <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
@@ -29,9 +31,14 @@ export function ChatPromptInput({
         value={value}
         onValueChange={onValueChange}
         onSubmit={onSubmit}
+        isLoading={isLoading}
+        disabled={isLoading}
         className="mx-auto max-w-3xl rounded-3xl border-border bg-card shadow-sm transition-shadow focus-within:shadow-md"
       >
-        <PromptInputTextarea placeholder="Message Relay…" className="min-h-[52px] text-sm" />
+        <PromptInputTextarea
+          placeholder="Message Relay…"
+          className="min-h-[52px] text-sm"
+        />
 
         <PromptInputActions className="w-full justify-between pt-1.5">
           <div className="flex items-center gap-1">
@@ -39,7 +46,8 @@ export function ChatPromptInput({
               <button
                 type="button"
                 aria-label="Attach file"
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                disabled={isLoading}
+                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 <Paperclip className="size-4" />
               </button>
@@ -48,7 +56,8 @@ export function ChatPromptInput({
               <button
                 type="button"
                 aria-label="Voice input"
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                disabled={isLoading}
+                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
               >
                 <Mic className="size-4" />
               </button>
