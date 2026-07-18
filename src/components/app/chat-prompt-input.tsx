@@ -26,7 +26,7 @@ export function ChatPromptInput({
   const canSend = value.trim().length > 0 && !isLoading;
 
   return (
-    <div className="px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+    <div className="px-3 py-2 sm:px-4 sm:py-1 bg-transparent">
       <PromptInput
         value={value}
         onValueChange={onValueChange}
@@ -82,8 +82,7 @@ export function ChatPromptInput({
           </PromptInputAction>
         </PromptInputActions>
       </PromptInput>
-      <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-muted-foreground">
-        Relay can make mistakes. Verify important information.
+      <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-gray-600">        Relay can make mistakes. Verify important information.
       </p>
     </div>
   );
