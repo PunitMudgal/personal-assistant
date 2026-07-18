@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { UIMessage } from "ai";
@@ -9,6 +8,7 @@ import {
   Message,
   MessageAction,
   MessageActions,
+  MessageAvatar,
   MessageContent,
 } from "@/components/ui/message";
 import {
@@ -16,8 +16,18 @@ import {
   ReasoningContent,
   ReasoningTrigger,
 } from "@/components/ui/reasoning";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getMessageReasoning, getMessageText } from "@/lib/chat";
+import {
+  ChainOfThought,
+  ChainOfThoughtContent,
+  ChainOfThoughtItem,
+  ChainOfThoughtStep,
+  ChainOfThoughtTrigger,
+} from "@/components/ui/chain-of-thought";
+import {
+  getMessageReasoning,
+  getMessageText,
+  getReasoningSteps,
+} from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
 function getInitials(name?: string | null, email?: string | null): string {
@@ -31,6 +41,47 @@ function getInitials(name?: string | null, email?: string | null): string {
   return "U";
 }
 
+function MessageReasoning({
+  text,
+  isStreaming,
+}: {
+  text: string;
+  isStreaming: boolean;
+}) {
+  const steps = !isStreaming ? getReasoningSteps(text) : [];
+
+  if (steps.length >= 2) {
+    return (
+      <ChainOfThought className="mb-1">
+        {steps.map((step) => (
+          <ChainOfThoughtStep key={step.title}>
+            <ChainOfThoughtTrigger>{step.title}</ChainOfThoughtTrigger>
+            <ChainOfThoughtContent>
+              <ChainOfThoughtItem className="whitespace-pre-wrap">
+                {step.body || step.title}
+              </ChainOfThoughtItem>
+            </ChainOfThoughtContent>
+          </ChainOfThoughtStep>
+        ))}
+      </ChainOfThought>
+    );
+  }
+
+  return (
+    <Reasoning className="mb-1" isStreaming={isStreaming}>
+      <ReasoningTrigger className="text-xs text-muted-foreground">
+        Thought process
+      </ReasoningTrigger>
+      <ReasoningContent
+        className="text-muted-foreground"
+        markdown
+      >
+        {text}
+      </ReasoningContent>
+    </Reasoning>
+  );
+}
+
 export function ChatMessage({ message }: { message: UIMessage }) {
   const { data: session } = useSession();
   const isUser = message.role === "user";
@@ -42,25 +93,18 @@ export function ChatMessage({ message }: { message: UIMessage }) {
   return (
     <Message className="gap-3">
       {isUser ? (
-        <Avatar
-          size="sm"
-          className="mt-1 shrink-0 bg-foreground text-background"
-        >
-          {session?.user?.image ? (
-            <AvatarImage src={session.user.image} alt={userName} />
-          ) : null}
-          <AvatarFallback className="bg-foreground text-xs font-medium text-background">
-            {userInitials}
-          </AvatarFallback>
-        </Avatar>
+        <MessageAvatar
+          src={session?.user?.image ?? ""}
+          alt={userName}
+          fallback={userInitials}
+          className="mt-1 bg-foreground text-background"
+        />
       ) : (
-        <Image
+        <MessageAvatar
           src="/logo-white.png"
           alt="Relay"
-          width={84}
-          height={28}
-          priority
-          className="mt-1 h-6 w-auto object-contain invert dark:invert-0 dark:opacity-90"
+          fallback="R"
+          className="mt-1 invert dark:invert-0"
         />
       )}
 
@@ -70,14 +114,10 @@ export function ChatMessage({ message }: { message: UIMessage }) {
         </span>
 
         {!isUser && reasoning ? (
-          <Reasoning className="mb-1" isStreaming={reasoning.isStreaming}>
-            <ReasoningTrigger className="text-xs text-muted-foreground">
-              Thought process
-            </ReasoningTrigger>
-            <ReasoningContent className="text-muted-foreground">
-              {reasoning.text}
-            </ReasoningContent>
-          </Reasoning>
+          <MessageReasoning
+            text={reasoning.text}
+            isStreaming={reasoning.isStreaming}
+          />
         ) : null}
 
         {text ? (

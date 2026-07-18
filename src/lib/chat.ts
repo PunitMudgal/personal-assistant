@@ -34,6 +34,55 @@ export function getMessageReasoning(message: UIMessage): {
   };
 }
 
+/**
+ * Split finished reasoning into chain-of-thought steps.
+ * Returns [] when there are fewer than 2 clear steps.
+ */
+export function getReasoningSteps(text: string): { title: string; body: string }[] {
+  const trimmed = text.trim();
+  if (!trimmed) return [];
+
+  const headingSplit = trimmed.split(/(?=^#{1,3}\s+.+$)/m).filter(Boolean);
+  if (headingSplit.length >= 2) {
+    return headingSplit.map((chunk) => {
+      const lines = chunk.trim().split("\n");
+      const title = lines[0]?.replace(/^#{1,3}\s+/, "").trim() || "Step";
+      const body = lines.slice(1).join("\n").trim();
+      return { title, body };
+    });
+  }
+
+  const stepSplit = trimmed.split(/(?=^(?:\*\*)?Step\s+\d+)/im).filter(Boolean);
+  if (stepSplit.length >= 2) {
+    return stepSplit.map((chunk, index) => {
+      const lines = chunk.trim().split("\n");
+      const title =
+        lines[0]
+          ?.replace(/^\*\*/, "")
+          .replace(/\*\*$/, "")
+          .trim() || `Step ${index + 1}`;
+      const body = lines.slice(1).join("\n").trim();
+      return { title, body };
+    });
+  }
+
+  return [];
+}
+
+/** Show ThinkingBar when the model is working but assistant text has not started. */
+export function shouldShowThinkingBar(
+  messages: UIMessage[],
+  isBusy: boolean,
+): boolean {
+  if (!isBusy) return false;
+
+  const last = messages[messages.length - 1];
+  if (!last) return true;
+  if (last.role === "user") return true;
+  if (last.role === "assistant" && !getMessageText(last)) return true;
+  return false;
+}
+
 export function isChatBusy(
   status: "submitted" | "streaming" | "ready" | "error",
 ): boolean {

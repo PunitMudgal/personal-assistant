@@ -38,7 +38,11 @@ export function ChatView({
       <ChatHeader />
 
       {chat.messages.length > 0 ? (
-        <ChatMessages messages={chat.messages} />
+        <ChatMessages
+          messages={chat.messages}
+          isBusy={chat.isBusy}
+          onStop={chat.stop}
+        />
       ) : (
         <ChatEmptyState onPick={chat.setInput} />
       )}

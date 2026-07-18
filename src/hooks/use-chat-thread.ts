@@ -44,7 +44,7 @@ export function useChatThread({
     [userId],
   );
 
-  const { messages, sendMessage, status } = useChat<ChatUIMessage>({
+  const { messages, sendMessage, status, stop } = useChat<ChatUIMessage>({
     id: chatId,
     messages: initialMessages,
     transport,
@@ -80,5 +80,6 @@ export function useChatThread({
     setInput,
     submit,
     isBusy,
+    stop,
   };
 }
