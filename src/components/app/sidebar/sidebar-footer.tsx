@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 type SidebarFooterProps = {
   collapsed: boolean;
+  onOpenMemories?: () => void;
 };
 
 function getInitials(name?: string | null, email?: string | null): string {
@@ -40,7 +41,10 @@ function getInitials(name?: string | null, email?: string | null): string {
   return "U";
 }
 
-export function SidebarFooter({ collapsed }: SidebarFooterProps) {
+export function SidebarFooter({
+  collapsed,
+  onOpenMemories,
+}: SidebarFooterProps) {
   const { data: session } = useSession();
   const user = session?.user;
   const name = user?.name ?? "Relay user";
@@ -57,6 +61,7 @@ export function SidebarFooter({ collapsed }: SidebarFooterProps) {
             !collapsed && "flex-1 justify-start gap-2 text-muted-foreground"
           )}
           aria-label="Memory"
+          onClick={onOpenMemories}
         >
           <Brain className="size-4" />
           {!collapsed && <span>Memory</span>}

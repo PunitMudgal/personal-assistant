@@ -9,6 +9,8 @@ import { SidebarSearch } from "@/components/app/sidebar/sidebar-search";
 import { SidebarSection } from "@/components/app/sidebar/sidebar-section";
 import { SidebarChatItem } from "@/components/app/sidebar/sidebar-chat-item";
 import { SidebarFooter } from "@/components/app/sidebar/sidebar-footer";
+import { SidebarMemories } from "@/components/app/sidebar/sidebar-memories";
+import type { Memory } from "@/db/schema";
 import type { Conversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -18,9 +20,12 @@ type SidebarProps = {
   /** null = new chat (no ?id= in the URL). */
   chatId: string | null;
   conversations: Conversation[];
+  memories: Memory[];
   onSelectConversation: (id: string) => void;
   onNewChat: () => void;
   inSheet?: boolean;
+  memoriesSheetOpen?: boolean;
+  onMemoriesSheetOpenChange?: (open: boolean) => void;
 };
 
 const EXPANDED_WIDTH = 288;
@@ -31,9 +36,12 @@ export function Sidebar({
   onToggleCollapse,
   chatId,
   conversations,
+  memories,
   onSelectConversation,
   onNewChat,
   inSheet,
+  memoriesSheetOpen,
+  onMemoriesSheetOpenChange,
 }: SidebarProps) {
   const [query, setQuery] = useState("");
   const [favouriteIds, setFavouriteIds] = useState<Set<string>>(
@@ -134,7 +142,17 @@ export function Sidebar({
         )}
       </ScrollArea>
 
-      <SidebarFooter collapsed={collapsed} />
+      <SidebarMemories
+        collapsed={collapsed}
+        memories={memories}
+        sheetOpen={memoriesSheetOpen}
+        onSheetOpenChange={onMemoriesSheetOpenChange}
+      />
+
+      <SidebarFooter
+        collapsed={collapsed}
+        onOpenMemories={() => onMemoriesSheetOpenChange?.(true)}
+      />
     </motion.aside>
   );
 }

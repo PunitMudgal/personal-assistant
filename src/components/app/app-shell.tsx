@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -15,6 +14,7 @@ import { MotionConfig } from "motion/react";
 import { Sidebar } from "@/components/app/sidebar/sidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useConversations } from "@/hooks/use-conversations";
+import type { Memory } from "@/db/schema";
 import type { Conversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,9 @@ type AppShellContextValue = {
   activeConversation: Conversation | null;
   conversations: Conversation[];
   refreshConversations: () => Promise<void>;
+  memories: Memory[];
+  memoriesSheetOpen: boolean;
+  setMemoriesSheetOpen: (open: boolean) => void;
 };
 
 const AppShellContext = createContext<AppShellContextValue | null>(null);
@@ -81,24 +84,24 @@ function useCollapsedPreference(): [boolean, () => void] {
 export function AppShell({
   children,
   initialConversations,
+  initialMemories,
 }: {
   children: React.ReactNode;
   initialConversations: Conversation[];
+  initialMemories: Memory[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlChatId = searchParams.get("id");
 
-  // Soft URL updates (history.replaceState) don't update useSearchParams.
   const [optimisticChatId, setOptimisticChatId] = useState<string | null>(null);
+  // Prefer real URL id; optimistic covers soft replaceState before Next sees ?id=.
   const activeChatId = urlChatId ?? optimisticChatId;
-
-  useEffect(() => {
-    setOptimisticChatId(null);
-  }, [urlChatId]);
 
   const [collapsed, toggleCollapsed] = useCollapsedPreference();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [memoriesSheetOpen, setMemoriesSheetOpen] = useState(false);
+
   const { conversations, refresh: refreshConversations } = useConversations(
     initialConversations,
   );
@@ -144,6 +147,9 @@ export function AppShell({
       activeConversation,
       conversations,
       refreshConversations,
+      memories: initialMemories,
+      memoriesSheetOpen,
+      setMemoriesSheetOpen,
     }),
     [
       collapsed,
@@ -156,6 +162,8 @@ export function AppShell({
       activeConversation,
       conversations,
       refreshConversations,
+      initialMemories,
+      memoriesSheetOpen,
     ],
   );
 
@@ -169,8 +177,11 @@ export function AppShell({
               onToggleCollapse={toggleCollapsed}
               chatId={activeChatId}
               conversations={conversations}
+              memories={initialMemories}
               onSelectConversation={openChat}
               onNewChat={newChat}
+              memoriesSheetOpen={memoriesSheetOpen}
+              onMemoriesSheetOpenChange={setMemoriesSheetOpen}
             />
           </aside>
 
@@ -184,6 +195,7 @@ export function AppShell({
                 collapsed={false}
                 chatId={activeChatId}
                 conversations={conversations}
+                memories={initialMemories}
                 onSelectConversation={openChat}
                 onNewChat={newChat}
                 inSheet
