@@ -2,10 +2,13 @@
 
 import {
   Brain,
+  Database,
   LogOut,
   Settings as SettingsIcon,
   UserCog,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,11 +48,13 @@ export function SidebarFooter({
   collapsed,
   onOpenMemories,
 }: SidebarFooterProps) {
+  const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
   const name = user?.name ?? "Relay user";
   const email = user?.email ?? "";
   const initials = getInitials(user?.name, user?.email);
+  const isDataActive = pathname === "/data";
 
   return (
     <div className="border-t border-border p-3">
@@ -70,12 +75,19 @@ export function SidebarFooter({
           variant="ghost"
           size={collapsed ? "icon" : "sm"}
           className={cn(
-            !collapsed && "flex-1 justify-start gap-2 text-muted-foreground"
+            !collapsed && "flex-1 justify-start gap-2",
+            isDataActive
+              ? "bg-muted text-foreground"
+              : "text-muted-foreground"
           )}
-          aria-label="Settings"
+          aria-label="Data"
+          aria-current={isDataActive ? "page" : undefined}
+          asChild
         >
-          <SettingsIcon className="size-4" />
-          {!collapsed && <span>Settings</span>}
+          <Link href="/data">
+            <Database className="size-4" />
+            {!collapsed && <span>Data</span>}
+          </Link>
         </Button>
         <ThemeToggle />
       </div>

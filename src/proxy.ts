@@ -7,5 +7,5 @@ import { auth } from "@/server/auth";
 export const proxy = auth;
 
 export const config = {
-  matcher: ["/chat/:path*", "/sign-in"],
+  matcher: ["/chat/:path*", "/data", "/sign-in"],
 };

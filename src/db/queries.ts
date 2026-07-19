@@ -1,8 +1,9 @@
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import type { UIMessage } from "ai";
 import { db } from "./index";
 import {
   chats,
+  emails,
   messages,
   memories,
   type Chat,
@@ -278,5 +279,78 @@ export async function deleteMemory(
     .returning();
 
   return deleted ?? null;
+}
+
+export type EmailListItem = {
+  id: string;
+  from: string | null;
+  subject: string | null;
+  preview: string;
+  body: string | null;
+  sentAt: string | null;
+};
+
+function truncateEmailPreview(body: string | null, max = 160): string {
+  if (!body) return "";
+  const t = body.trim().replace(/\s+/g, " ");
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1)}…`;
+}
+
+/** User-scoped email archive: optional substring search, newest first, paginated. */
+export async function listEmailsByUserId(
+  userId: string,
+  options: { q?: string; page: number; perPage: number },
+): Promise<{ items: EmailListItem[]; total: number }> {
+  const page = Math.max(1, options.page);
+  const perPage = options.perPage;
+  const offset = (page - 1) * perPage;
+  const q = options.q?.trim() ?? "";
+
+  const conditions = [eq(emails.userId, userId)];
+  if (q) {
+    const pattern = `%${q}%`;
+    conditions.push(
+      or(
+        ilike(emails.subject, pattern),
+        ilike(emails.from, pattern),
+        ilike(emails.body, pattern),
+      )!,
+    );
+  }
+
+  const where = and(...conditions);
+
+  const [totalRow] = await db
+    .select({ value: count() })
+    .from(emails)
+    .where(where);
+
+  const rows = await db
+    .select({
+      id: emails.id,
+      from: emails.from,
+      subject: emails.subject,
+      body: emails.body,
+      sentAt: emails.sentAt,
+      createdAt: emails.createdAt,
+    })
+    .from(emails)
+    .where(where)
+    .orderBy(desc(sql`coalesce(${emails.sentAt}, ${emails.createdAt})`))
+    .limit(perPage)
+    .offset(offset);
+
+  return {
+    total: totalRow?.value ?? 0,
+    items: rows.map((row) => ({
+      id: row.id,
+      from: row.from,
+      subject: row.subject,
+      preview: truncateEmailPreview(row.body),
+      body: row.body,
+      sentAt: (row.sentAt ?? row.createdAt)?.toISOString() ?? null,
+    })),
+  };
 }
 
