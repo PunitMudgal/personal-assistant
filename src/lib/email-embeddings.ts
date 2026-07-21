@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { embedMany } from "ai";
+import { cosineSimilarity, embed, embedMany } from "ai";
 import { inArray } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -9,11 +9,17 @@ import {
   EMAIL_EMBEDDING_CACHE_KEY,
   emailEmbeddingModel,
   emailEmbeddingProviderOptions,
+  emailQueryEmbeddingProviderOptions,
 } from "../../models";
 
 export type CachedEmailEmbedding = {
   id: string;
   embedding: number[];
+};
+
+export type EmailEmbeddingSearchHit = {
+  score: number;
+  email: EmailRow;
 };
 
 const BATCH_SIZE = 99;
@@ -128,5 +134,42 @@ export async function loadOrGenerateEmailEmbeddings(
     );
   }
 
+  return results;
+}
+
+/**
+ * Semantic search: embed the query, score against DB-cached email vectors
+ * via cosine similarity, return hits sorted by score descending.
+ */
+export async function searchEmailsWithEmbeddings(
+  query: string,
+  emails: EmailRow[],
+): Promise<EmailEmbeddingSearchHit[]> {
+  const q = query.trim();
+  if (!q || emails.length === 0) return [];
+
+  const cached = await loadOrGenerateEmailEmbeddings(emails);
+  const emailById = new Map(emails.map((email) => [email.id, email] as const));
+
+  const { embedding: queryEmbedding } = await embed({
+    model: emailEmbeddingModel,
+    value: q,
+    providerOptions: emailQueryEmbeddingProviderOptions,
+  });
+
+  const results: EmailEmbeddingSearchHit[] = [];
+
+  for (const { id, embedding } of cached) {
+    const email = emailById.get(id);
+    if (!email) continue;
+
+    const score = cosineSimilarity(queryEmbedding, embedding);
+    if (score > 0) {
+      results.push({ score, email });
+    }
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  console.log("Embedding search results:", results.length);
   return results;
 }

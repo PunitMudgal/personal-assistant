@@ -34,3 +34,11 @@ export const emailEmbeddingProviderOptions = {
     taskType: "RETRIEVAL_DOCUMENT" as const,
   },
 };
+
+/** Query-side embedding options (pair with RETRIEVAL_DOCUMENT docs). */
+export const emailQueryEmbeddingProviderOptions = {
+  google: {
+    outputDimensionality: EMAIL_EMBEDDING_DIMENSIONS,
+    taskType: "RETRIEVAL_QUERY" as const,
+  },
+};
