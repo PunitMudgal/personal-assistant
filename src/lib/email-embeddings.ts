@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import { cosineSimilarity, embed, embedMany } from "ai";
-import { inArray } from "drizzle-orm";
+import { embed, embedMany } from "ai";
+import { and, asc, cosineDistance, eq, gt, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import type { EmailRow } from "@/db/queries";
-import { emailEmbeddings } from "@/db/schema";
+import { emailEmbeddings, emails } from "@/db/schema";
 import {
   EMAIL_EMBEDDING_CACHE_KEY,
   emailEmbeddingModel,
@@ -12,17 +12,16 @@ import {
   emailQueryEmbeddingProviderOptions,
 } from "../../models";
 
-export type CachedEmailEmbedding = {
-  id: string;
-  embedding: number[];
-};
-
 export type EmailEmbeddingSearchHit = {
   score: number;
   email: EmailRow;
 };
 
-const BATCH_SIZE = 16; // keep batches small — free-tier embed quota is tight
+const BATCH_SIZE = 16;
+/** Max new embeddings to generate per search request (protects free-tier quota). */
+const DEFAULT_EMBED_BUDGET = 16;
+const DEFAULT_VECTOR_TOP_K = 50;
+const DEFAULT_MIN_SIMILARITY = 0.25;
 
 function emailEmbeddingText(email: Pick<EmailRow, "subject" | "body">): string {
   return `${email.subject ?? ""} ${email.body ?? ""}`.trim();
@@ -36,68 +35,60 @@ export function hashEmailContent(
     .digest("hex");
 }
 
-/**
- * Load email embeddings from Postgres (pgvector), generating and upserting
- * any misses (missing row, model change, or content change).
- *
- * Replaces the course's local JSON file cache with a DB-backed cache.
- */
-export async function loadOrGenerateEmailEmbeddings(
-  emails: EmailRow[],
-): Promise<CachedEmailEmbedding[]> {
-  if (emails.length === 0) return [];
+async function findEmailsNeedingEmbeddings(
+  corpus: EmailRow[],
+): Promise<EmailRow[]> {
+  if (corpus.length === 0) return [];
 
-  const ids = emails.map((e) => e.id);
   const cachedRows = await db
     .select({
       emailId: emailEmbeddings.emailId,
       model: emailEmbeddings.model,
       contentHash: emailEmbeddings.contentHash,
-      embedding: emailEmbeddings.embedding,
     })
     .from(emailEmbeddings)
-    .where(inArray(emailEmbeddings.emailId, ids));
+    .where(
+      inArray(
+        emailEmbeddings.emailId,
+        corpus.map((e) => e.id),
+      ),
+    );
 
   const cachedById = new Map(
     cachedRows.map((row) => [row.emailId, row] as const),
   );
 
-  const results: CachedEmailEmbedding[] = [];
-  const uncached: EmailRow[] = [];
-
-  for (const email of emails) {
+  return corpus.filter((email) => {
     const cached = cachedById.get(email.id);
-    const contentHash = hashEmailContent(email);
+    if (!cached) return true;
+    if (cached.model !== EMAIL_EMBEDDING_CACHE_KEY) return true;
+    return cached.contentHash !== hashEmailContent(email);
+  });
+}
 
-    if (
-      cached &&
-      cached.model === EMAIL_EMBEDDING_CACHE_KEY &&
-      cached.contentHash === contentHash
-    ) {
-      results.push({
-        id: email.id,
-        embedding: cached.embedding,
-      });
-    } else {
-      uncached.push(email);
-    }
-  }
+/**
+ * Upsert embeddings for missing/stale emails, capped by `budget` per call.
+ * Returns how many were newly written.
+ */
+export async function ensureEmailEmbeddings(
+  corpus: EmailRow[],
+  options: { budget?: number } = {},
+): Promise<number> {
+  const budget = options.budget ?? DEFAULT_EMBED_BUDGET;
+  const needing = await findEmailsNeedingEmbeddings(corpus);
+  if (needing.length === 0 || budget <= 0) return 0;
 
-  if (uncached.length === 0) {
-    return results;
-  }
-
+  const toGenerate = needing.slice(0, budget);
   console.log(
-    `Generating embeddings for ${uncached.length} email(s) [${EMAIL_EMBEDDING_CACHE_KEY}]`,
+    `Embedding ${toGenerate.length}/${needing.length} missing email(s) [${EMAIL_EMBEDDING_CACHE_KEY}]`,
   );
 
-  for (let i = 0; i < uncached.length; i += BATCH_SIZE) {
-    const batch = uncached.slice(i, i + BATCH_SIZE);
-    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-    const batchTotal = Math.ceil(uncached.length / BATCH_SIZE);
-    console.log(`Embedding batch ${batchNum}/${batchTotal}`);
+  let written = 0;
 
-    let embeddings: number[][];
+  for (let i = 0; i < toGenerate.length; i += BATCH_SIZE) {
+    const batch = toGenerate.slice(i, i + BATCH_SIZE);
+
+    let vectors: number[][];
     try {
       const result = await embedMany({
         model: emailEmbeddingModel,
@@ -105,21 +96,19 @@ export async function loadOrGenerateEmailEmbeddings(
         providerOptions: emailEmbeddingProviderOptions,
         maxRetries: 1,
       });
-      embeddings = result.embeddings;
+      vectors = result.embeddings;
     } catch (err) {
-      // Quota / network failures: keep whatever we already have cached.
       console.warn(
-        `Embedding batch ${batchNum}/${batchTotal} failed; using ${results.length} cached vector(s).`,
+        "Embedding backfill stopped:",
         err instanceof Error ? err.message : err,
       );
       break;
     }
 
     const now = new Date();
-
     await Promise.all(
       batch.map(async (email, j) => {
-        const embedding = embeddings[j]!;
+        const embedding = vectors[j]!;
         const contentHash = hashEmailContent(email);
 
         await db
@@ -140,35 +129,29 @@ export async function loadOrGenerateEmailEmbeddings(
               updatedAt: now,
             },
           });
-
-        results.push({ id: email.id, embedding });
+        written += 1;
       }),
     );
   }
 
-  return results;
+  return written;
 }
 
 /**
- * Semantic search: embed the query, score against DB-cached email vectors
- * via cosine similarity, return hits sorted by score descending.
- * Returns [] if embedding APIs fail (caller can fall back to BM25).
+ * Semantic top-K via pgvector (HNSW) — does not load all vectors into Node.
  */
 export async function searchEmailsWithEmbeddings(
   query: string,
-  emails: EmailRow[],
+  userId: string,
+  options: { topK?: number; minScore?: number } = {},
 ): Promise<EmailEmbeddingSearchHit[]> {
   const q = query.trim();
-  if (!q || emails.length === 0) return [];
+  if (!q) return [];
+
+  const topK = options.topK ?? DEFAULT_VECTOR_TOP_K;
+  const minScore = options.minScore ?? DEFAULT_MIN_SIMILARITY;
 
   try {
-    const cached = await loadOrGenerateEmailEmbeddings(emails);
-    if (cached.length === 0) return [];
-
-    const emailById = new Map(
-      emails.map((email) => [email.id, email] as const),
-    );
-
     const { embedding: queryEmbedding } = await embed({
       model: emailEmbeddingModel,
       value: q,
@@ -176,19 +159,46 @@ export async function searchEmailsWithEmbeddings(
       maxRetries: 1,
     });
 
-    const results: EmailEmbeddingSearchHit[] = [];
+    const distance = cosineDistance(
+      emailEmbeddings.embedding,
+      queryEmbedding,
+    );
+    const similarity = sql<number>`1 - (${distance})`;
 
-    for (const { id, embedding } of cached) {
-      const email = emailById.get(id);
-      if (!email) continue;
+    const rows = await db
+      .select({
+        id: emails.id,
+        from: emails.from,
+        subject: emails.subject,
+        body: emails.body,
+        sentAt: emails.sentAt,
+        createdAt: emails.createdAt,
+        score: similarity,
+      })
+      .from(emailEmbeddings)
+      .innerJoin(emails, eq(emails.id, emailEmbeddings.emailId))
+      .where(
+        and(
+          eq(emails.userId, userId),
+          eq(emailEmbeddings.model, EMAIL_EMBEDDING_CACHE_KEY),
+          gt(similarity, minScore),
+        ),
+      )
+      .orderBy(asc(distance))
+      .limit(topK);
 
-      const score = cosineSimilarity(queryEmbedding, embedding);
-      if (score > 0) {
-        results.push({ score, email });
-      }
-    }
+    const results = rows.map((row) => ({
+      score: Number(row.score),
+      email: {
+        id: row.id,
+        from: row.from,
+        subject: row.subject,
+        body: row.body,
+        sentAt: row.sentAt,
+        createdAt: row.createdAt,
+      },
+    }));
 
-    results.sort((a, b) => b.score - a.score);
     console.log("Embedding search results:", results.length);
     return results;
   } catch (err) {

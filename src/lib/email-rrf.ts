@@ -1,32 +1,55 @@
 import type { EmailRow } from "@/db/queries";
 import { searchEmailsWithBM25, tokenizeQuery } from "@/lib/email-bm25";
-import { searchEmailsWithEmbeddings } from "@/lib/email-embeddings";
+import {
+  ensureEmailEmbeddings,
+  searchEmailsWithEmbeddings,
+} from "@/lib/email-embeddings";
 
 export type RankedEmail = {
   score: number;
   email: EmailRow;
 };
 
-/** Standard RRF constant — dampens the impact of very high ranks. */
-const RRF_K = 60;
+export type RrfOptions = {
+  /** RRF dampening constant (default 60). */
+  k?: number;
+  /** How many hits to keep from each ranking before fusion. */
+  topKPerList?: number;
+  /** Relative weights per ranking list (same order as `rankings`). */
+  weights?: number[];
+};
+
+const DEFAULT_RRF_K = 60;
+const DEFAULT_TOP_K_PER_LIST = 50;
+const DEFAULT_EMBED_BUDGET = 16;
 
 /**
- * Reciprocal Rank Fusion: merge multiple ranked lists by position, not raw score.
- * Each list contributes `1 / (k + rank)` per document (rank is 0-based).
+ * Weighted Reciprocal Rank Fusion.
+ * Each list contributes `weight / (k + rank)` (rank is 0-based).
+ * Only the top `topKPerList` items from each list are fused.
  */
 export function reciprocalRankFusion(
   rankings: RankedEmail[][],
+  options: RrfOptions = {},
 ): RankedEmail[] {
+  const k = options.k ?? DEFAULT_RRF_K;
+  const topKPerList = options.topKPerList ?? DEFAULT_TOP_K_PER_LIST;
+  const weights = options.weights;
+
   const rrfScores = new Map<string, number>();
   const emailById = new Map<string, EmailRow>();
 
-  for (const ranking of rankings) {
-    ranking.forEach((item, rank) => {
+  rankings.forEach((ranking, listIndex) => {
+    const weight = weights?.[listIndex] ?? 1;
+    if (weight <= 0) return;
+
+    const sliced = ranking.slice(0, topKPerList);
+    sliced.forEach((item, rank) => {
       const prev = rrfScores.get(item.email.id) ?? 0;
-      rrfScores.set(item.email.id, prev + 1 / (RRF_K + rank));
+      rrfScores.set(item.email.id, prev + weight / (k + rank));
       emailById.set(item.email.id, item.email);
     });
-  }
+  });
 
   return Array.from(rrfScores.entries())
     .sort(([, a], [, b]) => b - a)
@@ -37,23 +60,40 @@ export function reciprocalRankFusion(
 }
 
 /**
- * Hybrid search: BM25 (keyword) + embedding (semantic) fused with RRF.
- * If embeddings fail (e.g. API quota), returns BM25-only ranking.
+ * Efficient hybrid search:
+ * 1. Cap embedding backfill (quota-friendly)
+ * 2. BM25 over corpus + pgvector top-K in parallel
+ * 3. Weighted top-K RRF fusion
  */
 export async function searchEmailsWithRRF(
   query: string,
+  userId: string,
   emails: EmailRow[],
 ): Promise<RankedEmail[]> {
   const q = query.trim();
   if (!q || emails.length === 0) return [];
 
   const keywords = tokenizeQuery(q);
-  const bm25Ranking = searchEmailsWithBM25(keywords, emails);
 
-  const embeddingsRanking = await searchEmailsWithEmbeddings(q, emails);
+  // Backfill a small batch of missing vectors, then retrieve.
+  await ensureEmailEmbeddings(emails, { budget: DEFAULT_EMBED_BUDGET });
+
+  const [bm25Ranking, embeddingsRanking] = await Promise.all([
+    Promise.resolve(searchEmailsWithBM25(keywords, emails)),
+    searchEmailsWithEmbeddings(q, userId, {
+      topK: DEFAULT_TOP_K_PER_LIST,
+      minScore: 0.25,
+    }),
+  ]);
+
   if (embeddingsRanking.length === 0) {
     return bm25Ranking;
   }
 
-  return reciprocalRankFusion([bm25Ranking, embeddingsRanking]);
+  // Slightly favor semantic matches while keeping keyword precision.
+  return reciprocalRankFusion([bm25Ranking, embeddingsRanking], {
+    k: DEFAULT_RRF_K,
+    topKPerList: DEFAULT_TOP_K_PER_LIST,
+    weights: [1, 1.2],
+  });
 }

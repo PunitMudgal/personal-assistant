@@ -35,7 +35,7 @@ function toEmailListItem(row: EmailRow): EmailListItem {
 /**
  * Email archive lookup for the Data page.
  * - No query: newest-first pagination from the DB
- * - With query: hybrid BM25 + embedding search fused with RRF
+ * - With query: hybrid BM25 + pgvector top-K fused with weighted RRF
  */
 export async function searchUserEmails(
   userId: string,
@@ -55,7 +55,7 @@ export async function searchUserEmails(
   }
 
   const corpus = await listEmailRowsByUserId(userId);
-  const ranked = await searchEmailsWithRRF(q, corpus);
+  const ranked = await searchEmailsWithRRF(q, userId, corpus);
   const pageRows = ranked.slice(offset, offset + perPage);
 
   return {
