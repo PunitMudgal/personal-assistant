@@ -169,6 +169,7 @@ export async function searchEmailsWithEmbeddings(
       .select({
         id: emails.id,
         from: emails.from,
+        to: emails.to,
         subject: emails.subject,
         body: emails.body,
         sentAt: emails.sentAt,
@@ -192,6 +193,7 @@ export async function searchEmailsWithEmbeddings(
       email: {
         id: row.id,
         from: row.from,
+        to: row.to,
         subject: row.subject,
         body: row.body,
         sentAt: row.sentAt,

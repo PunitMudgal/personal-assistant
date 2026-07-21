@@ -284,6 +284,7 @@ export async function deleteMemory(
 export type EmailRow = {
   id: string;
   from: string | null;
+  to: string | null;
   subject: string | null;
   body: string | null;
   sentAt: Date | null;
@@ -298,6 +299,7 @@ export async function listEmailRowsByUserId(
     .select({
       id: emails.id,
       from: emails.from,
+      to: emails.to,
       subject: emails.subject,
       body: emails.body,
       sentAt: emails.sentAt,
@@ -327,6 +329,7 @@ export async function listEmailsByUserId(
     .select({
       id: emails.id,
       from: emails.from,
+      to: emails.to,
       subject: emails.subject,
       body: emails.body,
       sentAt: emails.sentAt,

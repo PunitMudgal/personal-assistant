@@ -4,6 +4,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   safeValidateUIMessages,
+  stepCountIs,
   streamText,
   type UIMessage,
 } from "ai";
@@ -14,6 +15,7 @@ import {
   updateChat,
 } from "@/db/queries";
 import { generateTitle } from "./generate-title";
+import { createSearchTool } from "./search-tool";
 
 export const maxDuration = 30;
 
@@ -23,26 +25,6 @@ export type MyMessage = UIMessage<
     "frontend-action": "refresh-sidebar";
   }
 >;
-
-// async function generateTitle(messages: UIMessage[]): Promise<string> {
-//   const firstUserText = messages
-//     .find((m) => m.role === "user")
-//     ?.parts.filter((p) => p.type === "text")
-//     .map((p) => (p.type === "text" ? p.text : ""))
-//     .join(" ")
-//     .trim();
-
-//   if (!firstUserText) return "New conversation";
-
-//   const { text } = await generateText({
-//     model: primaryProvider,
-//     system:
-//       "Generate a short chat title (max 6 words). Return only the title, no quotes.",
-//     prompt: firstUserText.slice(0, 500),
-//   });
-
-//   return text.trim() || "New conversation";
-// }
 
 export async function POST(req: Request) {
   const body: { messages: UIMessage[]; id: string; userId: string } =
@@ -67,7 +49,6 @@ export async function POST(req: Request) {
   }
 
   const messages = validatedMessagesResult.data;
-  console.log("messages", messages);
 
   let chat = await getChatById(chatId);
   const mostRecentMessage = messages[messages.length - 1];
@@ -114,10 +95,30 @@ export async function POST(req: Request) {
 
       const result = streamText({
         model: primaryProvider,
-        messages: await convertToModelMessages(messages),
-      });
+        system: `
+<task-context>
+You are an email assistant that helps users find and understand information from their emails.
+</task-context>
 
-      console.log("result", result);
+<rules>
+- You MUST use the search tool for ANY question about emails, people, amounts, dates, or specific information
+- NEVER answer from your training data — always search the actual emails first
+- If the first search doesn't find enough information, try different keywords or search queries
+- Use both semantic (searchQuery) and keyword (keywords) search parameters together for best results
+- Only after searching should you formulate your answer based on the search results
+- If search returns nothing relevant, say so clearly instead of inventing details
+</rules>
+
+<the-ask>
+Here is the user's question. Search their emails first, then provide your answer based on what you find.
+</the-ask>
+`,
+        messages: await convertToModelMessages(messages),
+        tools: {
+          search: createSearchTool(userId),
+        },
+        stopWhen: [stepCountIs(10)],
+      });
 
       writer.merge(
         result.toUIMessageStream({
