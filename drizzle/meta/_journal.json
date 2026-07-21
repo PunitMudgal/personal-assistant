@@ -15,6 +15,13 @@
       "when": 1783693072999,
       "tag": "0001_loving_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784597663132,
+      "tag": "0002_email_embeddings",
+      "breakpoints": true
     }
   ]
 }

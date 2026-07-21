@@ -10,9 +10,13 @@ import {
   index,
   uniqueIndex,
   boolean,
+  vector,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import type { UIMessage } from "ai";
+
+/** Must match `providerOptions.google.outputDimensionality` when embedding. */
+export const EMAIL_EMBEDDING_DIMENSIONS = 768;
 
 export const users = pgTable("user", {
   id: text("id")
@@ -97,6 +101,34 @@ export const emails = pgTable(
     index("email_user_id_idx").on(table.userId),
     index("email_user_id_sent_at_idx").on(table.userId, table.sentAt),
     index("email_thread_id_idx").on(table.threadId),
+  ],
+);
+
+/**
+ * Cached email embeddings for semantic / hybrid search (pgvector).
+ * One row per email; regenerated when model or content hash changes.
+ */
+export const emailEmbeddings = pgTable(
+  "email_embedding",
+  {
+    emailId: uuid("email_id")
+      .primaryKey()
+      .references(() => emails.id, { onDelete: "cascade" }),
+    /** Cache key, e.g. google-gemini-embedding-001-768 */
+    model: text("model").notNull(),
+    /** sha256 of subject + body — invalidate when email text changes */
+    contentHash: text("content_hash").notNull(),
+    embedding: vector("embedding", {
+      dimensions: EMAIL_EMBEDDING_DIMENSIONS,
+    }).notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("email_embedding_hnsw_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
   ],
 );
 
@@ -198,6 +230,17 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const emailsRelations = relations(emails, ({ one }) => ({
   user: one(users, { fields: [emails.userId], references: [users.id] }),
+  embedding: one(emailEmbeddings, {
+    fields: [emails.id],
+    references: [emailEmbeddings.emailId],
+  }),
+}));
+
+export const emailEmbeddingsRelations = relations(emailEmbeddings, ({ one }) => ({
+  email: one(emails, {
+    fields: [emailEmbeddings.emailId],
+    references: [emails.id],
+  }),
 }));
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
@@ -227,3 +270,4 @@ export type Chat = typeof chats.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Memory = typeof memories.$inferSelect;
 export type Email = typeof emails.$inferSelect;
+export type EmailEmbedding = typeof emailEmbeddings.$inferSelect;

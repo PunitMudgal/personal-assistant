@@ -11,6 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:enable-pgvector": "tsx scripts/enable-pgvector.ts",
+    "db:apply-email-embeddings": "tsx scripts/apply-email-embeddings.ts",
     "db:seed:emails": "tsx scripts/seed-emails.ts"
   },
   "dependencies": {

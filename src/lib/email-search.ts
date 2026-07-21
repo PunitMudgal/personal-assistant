@@ -4,6 +4,7 @@ import {
   type EmailRow,
 } from "@/db/queries";
 import { searchEmailsWithBM25, tokenizeQuery } from "@/lib/email-bm25";
+import { loadOrGenerateEmailEmbeddings } from "@/lib/email-embeddings";
 
 export type EmailListItem = {
   id: string;
@@ -35,7 +36,8 @@ function toEmailListItem(row: EmailRow): EmailListItem {
 /**
  * Email archive lookup for the Data page.
  * - No query: newest-first pagination from the DB
- * - With query: BM25 ranking (embeddings / hybrid can plug in here later)
+ * - With query: BM25 ranking + ensure pgvector embeddings are cached
+ *   (embeddings are warmed for upcoming hybrid search; not ranked yet)
  */
 export async function searchUserEmails(
   userId: string,
@@ -56,6 +58,11 @@ export async function searchUserEmails(
   }
 
   const corpus = await listEmailRowsByUserId(userId);
+
+  // Warm / refresh embedding cache in Postgres (pgvector) for hybrid search later.
+  const embeddings = await loadOrGenerateEmailEmbeddings(corpus);
+  console.log("Email embeddings loaded:", embeddings.length);
+
   const ranked = searchEmailsWithBM25(keywords, corpus);
   const pageRows = ranked.slice(offset, offset + perPage);
 
