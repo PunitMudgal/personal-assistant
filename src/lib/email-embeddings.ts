@@ -22,7 +22,7 @@ export type EmailEmbeddingSearchHit = {
   email: EmailRow;
 };
 
-const BATCH_SIZE = 99;
+const BATCH_SIZE = 16; // keep batches small — free-tier embed quota is tight
 
 function emailEmbeddingText(email: Pick<EmailRow, "subject" | "body">): string {
   return `${email.subject ?? ""} ${email.body ?? ""}`.trim();
@@ -97,11 +97,23 @@ export async function loadOrGenerateEmailEmbeddings(
     const batchTotal = Math.ceil(uncached.length / BATCH_SIZE);
     console.log(`Embedding batch ${batchNum}/${batchTotal}`);
 
-    const { embeddings } = await embedMany({
-      model: emailEmbeddingModel,
-      values: batch.map(emailEmbeddingText),
-      providerOptions: emailEmbeddingProviderOptions,
-    });
+    let embeddings: number[][];
+    try {
+      const result = await embedMany({
+        model: emailEmbeddingModel,
+        values: batch.map(emailEmbeddingText),
+        providerOptions: emailEmbeddingProviderOptions,
+        maxRetries: 1,
+      });
+      embeddings = result.embeddings;
+    } catch (err) {
+      // Quota / network failures: keep whatever we already have cached.
+      console.warn(
+        `Embedding batch ${batchNum}/${batchTotal} failed; using ${results.length} cached vector(s).`,
+        err instanceof Error ? err.message : err,
+      );
+      break;
+    }
 
     const now = new Date();
 
@@ -140,6 +152,7 @@ export async function loadOrGenerateEmailEmbeddings(
 /**
  * Semantic search: embed the query, score against DB-cached email vectors
  * via cosine similarity, return hits sorted by score descending.
+ * Returns [] if embedding APIs fail (caller can fall back to BM25).
  */
 export async function searchEmailsWithEmbeddings(
   query: string,
@@ -148,28 +161,41 @@ export async function searchEmailsWithEmbeddings(
   const q = query.trim();
   if (!q || emails.length === 0) return [];
 
-  const cached = await loadOrGenerateEmailEmbeddings(emails);
-  const emailById = new Map(emails.map((email) => [email.id, email] as const));
+  try {
+    const cached = await loadOrGenerateEmailEmbeddings(emails);
+    if (cached.length === 0) return [];
 
-  const { embedding: queryEmbedding } = await embed({
-    model: emailEmbeddingModel,
-    value: q,
-    providerOptions: emailQueryEmbeddingProviderOptions,
-  });
+    const emailById = new Map(
+      emails.map((email) => [email.id, email] as const),
+    );
 
-  const results: EmailEmbeddingSearchHit[] = [];
+    const { embedding: queryEmbedding } = await embed({
+      model: emailEmbeddingModel,
+      value: q,
+      providerOptions: emailQueryEmbeddingProviderOptions,
+      maxRetries: 1,
+    });
 
-  for (const { id, embedding } of cached) {
-    const email = emailById.get(id);
-    if (!email) continue;
+    const results: EmailEmbeddingSearchHit[] = [];
 
-    const score = cosineSimilarity(queryEmbedding, embedding);
-    if (score > 0) {
-      results.push({ score, email });
+    for (const { id, embedding } of cached) {
+      const email = emailById.get(id);
+      if (!email) continue;
+
+      const score = cosineSimilarity(queryEmbedding, embedding);
+      if (score > 0) {
+        results.push({ score, email });
+      }
     }
-  }
 
-  results.sort((a, b) => b.score - a.score);
-  console.log("Embedding search results:", results.length);
-  return results;
+    results.sort((a, b) => b.score - a.score);
+    console.log("Embedding search results:", results.length);
+    return results;
+  } catch (err) {
+    console.warn(
+      "Embedding search unavailable; falling back to BM25-only.",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
 }
