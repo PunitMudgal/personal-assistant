@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { EmailList } from "@/components/app/data/email-list";
 import { EmailPagination } from "@/components/app/data/email-pagination";
 import { EmailSearchForm } from "@/components/app/data/email-search-form";
-import { listEmailsByUserId } from "@/db/queries";
 import { parsePage, parsePerPage } from "@/lib/data-search";
+import { searchUserEmails } from "@/lib/email-search";
 import { auth } from "@/server/auth";
 
 export default async function DataPage({
@@ -22,7 +22,7 @@ export default async function DataPage({
   const page = parsePage(params.page);
   const perPage = parsePerPage(params.perPage);
 
-  const { items, total } = await listEmailsByUserId(session.user.id, {
+  const { items, total } = await searchUserEmails(session.user.id, {
     q: q || undefined,
     page,
     perPage,

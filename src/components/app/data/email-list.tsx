@@ -7,7 +7,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { EmailListItem } from "@/db/queries";
+import type { EmailListItem } from "@/lib/email-search";
 import { cn } from "@/lib/utils";
 
 type EmailListProps = {

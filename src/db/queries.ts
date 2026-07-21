@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
 import type { UIMessage } from "ai";
 import { db } from "./index";
 import {
@@ -281,52 +281,49 @@ export async function deleteMemory(
   return deleted ?? null;
 }
 
-export type EmailListItem = {
+export type EmailRow = {
   id: string;
   from: string | null;
   subject: string | null;
-  preview: string;
   body: string | null;
-  sentAt: string | null;
+  sentAt: Date | null;
+  createdAt: Date;
 };
 
-function truncateEmailPreview(body: string | null, max = 160): string {
-  if (!body) return "";
-  const t = body.trim().replace(/\s+/g, " ");
-  if (t.length <= max) return t;
-  return `${t.slice(0, max - 1)}…`;
+/** All emails for a user (newest first) — used as the search corpus. */
+export async function listEmailRowsByUserId(
+  userId: string,
+): Promise<EmailRow[]> {
+  return db
+    .select({
+      id: emails.id,
+      from: emails.from,
+      subject: emails.subject,
+      body: emails.body,
+      sentAt: emails.sentAt,
+      createdAt: emails.createdAt,
+    })
+    .from(emails)
+    .where(eq(emails.userId, userId))
+    .orderBy(desc(sql`coalesce(${emails.sentAt}, ${emails.createdAt})`));
 }
 
-/** User-scoped email archive: optional substring search, newest first, paginated. */
+/** User-scoped email archive: newest first, paginated (no search). */
 export async function listEmailsByUserId(
   userId: string,
-  options: { q?: string; page: number; perPage: number },
-): Promise<{ items: EmailListItem[]; total: number }> {
+  options: { page: number; perPage: number },
+): Promise<{ items: EmailRow[]; total: number }> {
   const page = Math.max(1, options.page);
   const perPage = options.perPage;
   const offset = (page - 1) * perPage;
-  const q = options.q?.trim() ?? "";
-
-  const conditions = [eq(emails.userId, userId)];
-  if (q) {
-    const pattern = `%${q}%`;
-    conditions.push(
-      or(
-        ilike(emails.subject, pattern),
-        ilike(emails.from, pattern),
-        ilike(emails.body, pattern),
-      )!,
-    );
-  }
-
-  const where = and(...conditions);
+  const where = eq(emails.userId, userId);
 
   const [totalRow] = await db
     .select({ value: count() })
     .from(emails)
     .where(where);
 
-  const rows = await db
+  const items = await db
     .select({
       id: emails.id,
       from: emails.from,
@@ -343,14 +340,7 @@ export async function listEmailsByUserId(
 
   return {
     total: totalRow?.value ?? 0,
-    items: rows.map((row) => ({
-      id: row.id,
-      from: row.from,
-      subject: row.subject,
-      preview: truncateEmailPreview(row.body),
-      body: row.body,
-      sentAt: (row.sentAt ?? row.createdAt)?.toISOString() ?? null,
-    })),
+    items,
   };
 }
 
