@@ -16,12 +16,20 @@ export default async function AppLayout({
     redirect("/sign-in?callbackUrl=/chat");
   }
 
-  const [chats, memories] = await Promise.all([
-    listChatsByUserId(session.user.id),
-    listMemoriesByUserId(session.user.id, { activeOnly: true, limit: 50 }),
-  ]);
+  let initialConversations: ReturnType<typeof toConversation>[] = [];
+  let memories: Awaited<ReturnType<typeof listMemoriesByUserId>> = [];
 
-  const initialConversations = chats.map(toConversation);
+  try {
+    const [chats, memoryRows] = await Promise.all([
+      listChatsByUserId(session.user.id),
+      listMemoriesByUserId(session.user.id, { activeOnly: true, limit: 50 }),
+    ]);
+    initialConversations = chats.map(toConversation);
+    memories = memoryRows;
+  } catch (err) {
+    console.error("[app/layout] Failed to load chats/memories:", err);
+    // Keep the shell usable even if sidebar data fails (e.g. schema lag).
+  }
 
   return (
     <Suspense fallback={<div className="h-dvh bg-background" />}>

@@ -1,32 +1,18 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-
-import { db } from "@/db";
-import {
-  accounts,
-  sessions,
-  users,
-  verificationTokens,
-} from "@/db/schema";
 
 /**
- * Auth.js (NextAuth v5) config.
+ * Edge/proxy-safe Auth.js config (NO database adapter).
+ * Full adapter + JWT session live in `./index.ts`.
  *
  * Env vars (Auth.js auto-reads AUTH_*):
  * - AUTH_SECRET
  * - AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET
  * - AUTH_GITHUB_ID / AUTH_GITHUB_SECRET
- * - AUTH_URL (optional in prod; e.g. https://your-domain.com)
+ * - AUTH_URL (e.g. https://your-domain.com in production)
  */
 export const authConfig = {
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
   providers: [
     Google({
       allowDangerousEmailAccountLinking: true,
@@ -44,21 +30,26 @@ export const authConfig = {
       const { pathname } = request.nextUrl;
       const isLoggedIn = !!auth?.user;
 
-      // Protect the chat app shell
-      if (pathname.startsWith("/chat")) {
+      if (pathname.startsWith("/chat") || pathname.startsWith("/data")) {
         return isLoggedIn;
       }
 
-      // Signed-in users hitting /sign-in go to chat
       if (pathname.startsWith("/sign-in") && isLoggedIn) {
         return Response.redirect(new URL("/chat", request.nextUrl));
       }
 
       return true;
     },
-    session({ session, user }) {
+    jwt({ token, user }) {
+      if (user?.id) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
+        const id = (token.id as string | undefined) ?? token.sub;
+        if (id) session.user.id = id;
       }
       return session;
     },
