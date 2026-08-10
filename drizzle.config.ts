@@ -1,5 +1,8 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
+
+const nodeEnv = process.env.NODE_ENV ?? "development";
+config({ path: `.env.${nodeEnv}`, override: true });
 
 export default defineConfig({
   dialect: "postgresql",

@@ -6,7 +6,6 @@
  * CREATE EXTENSION often cannot run inside drizzle-kit's migration transaction,
  * so we enable it first, then run `drizzle-kit migrate`.
  */
-import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
 
 async function main() {

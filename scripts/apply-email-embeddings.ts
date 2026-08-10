@@ -4,7 +4,6 @@
  *
  * Usage: npx tsx scripts/apply-email-embeddings.ts
  */
-import "dotenv/config";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";

@@ -3,17 +3,18 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createGroq } from "@ai-sdk/groq";
 
 import { EMAIL_EMBEDDING_DIMENSIONS } from "@/db/schema";
+import { env } from "@/env";
 
 const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY,
+  apiKey: env.GOOGLE_API_KEY,
 });
 
 const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROTUER_API_KEY,
+  apiKey: env.OPENROTUER_API_KEY,
 });
 
 const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: env.GROQ_API_KEY,
 });
 
 export const primaryProvider = google("gemini-3.5-flash");

@@ -10,7 +10,12 @@ import { authConfig } from "@/server/auth/config";
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/proxy
  */
-export const { auth: proxy } = NextAuth(authConfig);
+const { auth } = NextAuth(authConfig);
+
+// Next.js 16 requires an actual function export from proxy.ts.
+export function proxy(...args: Parameters<typeof auth>) {
+  return auth(...args);
+}
 
 export const config = {
   matcher: ["/chat", "/chat/:path*", "/data", "/data/:path*", "/sign-in"],
