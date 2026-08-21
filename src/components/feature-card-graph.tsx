@@ -54,20 +54,20 @@ export function FeatureCardGraph() {
   };
 
   return (
-    <div className="relative h-full w-full max-w-[32rem] mx-auto transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
+    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
       <motion.div
         variants={containerVariants}
         initial="initial"
         whileHover="whileHover"
         className="flex h-full w-full cursor-pointer flex-col items-start justify-between"
       >
-        <div className="relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-xl bg-transparent p-10">
-          <div className="relative h-[150px] w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-900">
+        <div className="relative flex min-h-75 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-xl bg-transparent p-10">
+          <div className="relative h-[150px] w-full max-w-xs cursor-pointer overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-900">
             <motion.p
               variants={variant2}
-              className="absolute left-5 top-5 w-fit text-[15px]"
+              className="absolute left-5 top-5 w-fit font-mono text-[15px] tabular-nums text-neutral-200"
             >
-              +245%
+              0.9s median
             </motion.p>
             <motion.svg
               variants={variant1}
@@ -90,8 +90,8 @@ export function FeatureCardGraph() {
                   y2={262}
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stopColor="#22c55e" />
-                  <stop offset={1} stopColor="#15803d" />
+                  <stop stopColor="#4CC2E9" />
+                  <stop offset={1} stopColor="#155e75" />
                 </linearGradient>
               </defs>
             </motion.svg>
@@ -101,7 +101,7 @@ export function FeatureCardGraph() {
           <h2 className="text-xl font-semibold">Fast where it matters</h2>
           <p className="text-base font-normal text-neutral-400">
             A capable model for real answers, a faster one for the small stuff —
-            nothing feels laggy{" "}
+            nothing feels laggy
           </p>
         </div>
       </motion.div>

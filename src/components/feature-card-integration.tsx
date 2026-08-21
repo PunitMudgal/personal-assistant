@@ -17,37 +17,37 @@ const tiles = [
   {
     icon: <HeartHandshake className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-orange-600 via-rose-600 to-violet-600 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-[#4CC2E9] opacity-20 blur-[20px] filter"></div>
     ),
   },
   {
     icon: <Globe className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-cyan-500 via-blue-500 to-indigo-500 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-white opacity-10 blur-[20px] filter"></div>
     ),
   },
   {
     icon: <File className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-green-500 via-teal-500 to-emerald-600 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-[#4CC2E9] opacity-15 blur-[20px] filter"></div>
     ),
   },
   {
     icon: <Shield className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-yellow-400 via-orange-500 to-yellow-600 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-white opacity-10 blur-[20px] filter"></div>
     ),
   },
   {
     icon: <Rss className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-orange-600 via-rose-600 to-violet-600 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-[#4CC2E9] opacity-20 blur-[20px] filter"></div>
     ),
   },
   {
     icon: <BarChart className="size-full" />,
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-linear-to-r from-gray-600 via-gray-500 to-gray-400 opacity-70 blur-[20px] filter"></div>
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-white opacity-10 blur-[20px] filter"></div>
     ),
   },
 ];
@@ -65,12 +65,9 @@ const shuffleArray = <T,>(array: T[], seed: number) => {
   const random = createSeededRandom(seed);
   let currentIndex = array.length,
     randomIndex;
-  // While there remain elements to shuffle.
   while (currentIndex !== 0) {
-    // Pick a remaining element.
     randomIndex = Math.floor(random() * currentIndex);
     currentIndex--;
-    // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex],
       array[currentIndex],
@@ -102,8 +99,7 @@ const Card = (card: { icon: JSX.Element; bg: JSX.Element }) => {
       animate={controls}
       className={cn(
         "relative size-20 cursor-pointer overflow-hidden rounded-2xl border p-4",
-        // dark styles
-        "transform-gpu bg-transparent [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]",
+        "transform-gpu bg-transparent [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]"
       )}
     >
       {card.icon}
@@ -127,7 +123,7 @@ export function FeatureCardIntegration() {
   const [randomTiles4] = useState(() => shuffleArray([...tiles], 4));
 
   return (
-    <div className="relative h-full w-full max-w-lg mx-auto transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-125">
+    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -164,15 +160,15 @@ export function FeatureCardIntegration() {
                 <Card key={idx} {...review} />
               ))}
             </Marquee>
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-background"></div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-linear-to-l from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-black"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-linear-to-l from-black"></div>
           </div>
         </div>
         <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
           <h2 className="text-xl font-semibold">Connected everywhere</h2>
           <p className="text-base font-normal text-neutral-400">
-            Gmail, Calendar, and Notion — wired in through the same protocol
-            powering next-gen AI agents
+            Gmail, Calendar, and Notion connect in one click — Relay reads them
+            directly, no copy-pasting context
           </p>
         </div>
       </motion.div>

@@ -3,26 +3,14 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
-const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Contact", href: "/contact" },
-  { label: "FAQ", href: "/faq" },
-];
+const navLinks = [{ label: "Features", href: "/#features" }];
 
 const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { data: session, status } = useSession();
   const isAuthenticated = status === "authenticated" && !!session?.user;
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     if (isMobileOpen) {
@@ -36,29 +24,22 @@ const Header = () => {
   }, [isMobileOpen]);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#0a0a0b]/80 backdrop-blur-xl border-b border-white/[0.06] shadow-[0_1px_0_0_rgba(255,255,255,0.02)]"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between h-16 md:h-20">
+    <header className="fixed top-0 left-0 right-0 z-50 mt-6 px-4">
+      <div className="mx-auto w-max max-w-full">
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/60 pl-5 pr-2 py-2 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.8)] backdrop-blur-3xl">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            {/* <div className="relative h-8 w-8 md:h-9 md:w-9 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-0.5 ring-1 ring-white/10 transition-all duration-300 group-hover:ring-indigo-500/40 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.15)]">
-              <div className="h-full w-full rounded-[10px] bg-[#0a0a0b] flex items-center justify-center"> */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
+          >
             <Image
               src="/logo-white.png"
               alt="Relay"
-              width={40}
-              height={40}
-              className="h-4 w-4 md:h-7 md:w-7 object-contain"
+              width={28}
+              height={28}
+              className="h-5 w-5 object-contain"
             />
-            {/* </div>
-            </div> */}
-            <span className="text-lg md:text-xl font-bold tracking-tight text-white">
+            <span className="text-base font-semibold tracking-tight text-white">
               Relay
             </span>
           </Link>
@@ -66,146 +47,103 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav
             aria-label="Main navigation"
-            className="hidden md:flex items-center gap-1"
+            className="hidden md:flex items-center"
           >
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative px-4 py-2 text-sm font-medium text-neutral-400 rounded-lg transition-all duration-200 hover:text-white hover:bg-white/[0.06] group"
+                className="px-3 py-1.5 text-sm font-medium text-neutral-400 rounded-full transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
               >
                 {link.label}
-                <span className="absolute inset-x-4 bottom-0 h-[2px] bg-gradient-to-r from-indigo-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
               </Link>
             ))}
-
-            {/* Get Started + Sign In / Open Chat */}
-            <div className="ml-3 pl-3 border-l border-white/[0.06] flex items-center gap-3">
-              {isAuthenticated ? (
-                <Link
-                  href="/chat"
-                  className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
-                >
-                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                    Open chat
-                    <svg
-                      className="ml-2 h-3.5 w-3.5 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </span>
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/sign-in"
-                    className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
-                  >
-                    <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                      Get Started
-                      <svg
-                        className="ml-2 h-3.5 w-3.5 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
-                    </span>
-                  </Link>
-
-                  <Link
-                    href="/sign-in"
-                    className="group relative inline-flex h-9 items-center justify-center overflow-hidden rounded-full p-px shadow-2xl transition-transform hover:scale-[1.02] active:scale-95"
-                  >
-                    <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-40 group-hover:opacity-70 transition-opacity" />
-                    <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-1 text-sm font-medium text-neutral-200 backdrop-blur-3xl">
-                      Sign In
-                      <svg
-                        className="ml-2 h-3.5 w-3.5 text-neutral-400 transition-transform duration-300 group-hover:translate-x-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </span>
-                  </Link>
-                </>
-              )}
-            </div>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="md:hidden relative h-9 w-9 flex items-center justify-center rounded-lg text-neutral-400 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
-            aria-label={isMobileOpen ? "Close menu" : "Open menu"}
-          >
-            {isMobileOpen ? (
-              <X className="h-5 w-5" />
+          <div className="ml-1 flex items-center gap-1">
+            {isAuthenticated ? (
+              <Link
+                href="/chat"
+                className="inline-flex h-9 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-black transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-neutral-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                Open chat
+              </Link>
             ) : (
-              <Menu className="h-5 w-5" />
+              <>
+                <Link
+                  href="/sign-in"
+                  className="hidden sm:inline-flex h-9 items-center justify-center rounded-full px-3 text-sm font-medium text-neutral-400 transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-in"
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-black transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-neutral-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                >
+                  Start free
+                </Link>
+              </>
             )}
-          </button>
+
+            {/* Mobile Menu Button — lines morph into a true X */}
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              aria-expanded={isMobileOpen}
+              aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+              className="md:hidden relative ml-1 h-9 w-9 rounded-full text-neutral-300 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
+            >
+              <span
+                aria-hidden
+                className={`absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 bg-current transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                  isMobileOpen ? "rotate-45" : "-translate-y-[3.5px]"
+                }`}
+              />
+              <span
+                aria-hidden
+                className={`absolute left-1/2 top-1/2 h-[1.5px] w-4 -translate-x-1/2 bg-current transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+                  isMobileOpen ? "-rotate-45" : "translate-y-[3.5px]"
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Navigation Overlay */}
       <div
-        className={`md:hidden fixed inset-0 top-16 bg-[#0a0a0b]/95 backdrop-blur-2xl transition-all duration-300 ${
-          isMobileOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+        className={`md:hidden fixed inset-0 -z-10 flex items-center justify-center bg-black/80 backdrop-blur-3xl transition-opacity duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isMobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
-        <nav className="flex flex-col items-center justify-center h-full gap-2 px-6">
+        <nav
+          aria-label="Mobile navigation"
+          className="flex w-full max-w-xs flex-col items-stretch gap-2 px-6 pt-16"
+        >
           {navLinks.map((link, i) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setIsMobileOpen(false)}
-              className={`w-full max-w-xs text-center px-6 py-4 text-lg font-medium text-neutral-400 rounded-xl transition-all duration-200 hover:text-white hover:bg-white/[0.06] hover:scale-[1.02] ${
+              className={`rounded-2xl px-6 py-4 text-center text-lg font-medium text-neutral-300 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-white/[0.06] hover:text-white ${
                 isMobileOpen
                   ? "translate-y-0 opacity-100"
-                  : "translate-y-4 opacity-0"
+                  : "translate-y-12 opacity-0"
               }`}
-              style={{
-                transitionDelay: isMobileOpen ? `${i * 60}ms` : "0ms",
-              }}
+              style={{ transitionDelay: isMobileOpen ? `${i * 80}ms` : "0ms" }}
             >
               {link.label}
             </Link>
           ))}
 
-          {/* Mobile Get Started + Sign In / Open Chat */}
           <div
-            className={`w-full max-w-xs mt-4 flex flex-col gap-3 transition-all duration-300 ${
+            className={`mt-4 flex flex-col gap-3 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
               isMobileOpen
                 ? "translate-y-0 opacity-100"
-                : "translate-y-4 opacity-0"
+                : "translate-y-12 opacity-0"
             }`}
             style={{
               transitionDelay: isMobileOpen
-                ? `${navLinks.length * 60}ms`
+                ? `${navLinks.length * 80}ms`
                 : "0ms",
             }}
           >
@@ -213,72 +151,25 @@ const Header = () => {
               <Link
                 href="/chat"
                 onClick={() => setIsMobileOpen(false)}
-                className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-white text-base font-semibold text-black transition-transform active:scale-[0.98]"
               >
-                <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                  Open chat
-                  <svg
-                    className="ml-2 h-4 w-4 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </span>
+                Open chat
               </Link>
             ) : (
               <>
                 <Link
                   href="/sign-in"
                   onClick={() => setIsMobileOpen(false)}
-                  className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 p-px shadow-2xl"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-white text-base font-semibold text-black transition-transform active:scale-[0.98]"
                 >
-                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl transition-all duration-300 group-hover:bg-transparent group-hover:text-white">
-                    Get Started
-                    <svg
-                      className="ml-2 h-4 w-4 text-emerald-400 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </span>
+                  Start free
                 </Link>
-
                 <Link
                   href="/sign-in"
                   onClick={() => setIsMobileOpen(false)}
-                  className="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-full p-px shadow-2xl"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full text-base font-medium text-neutral-400 transition-colors hover:text-white"
                 >
-                  <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] opacity-50" />
-                  <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-neutral-950 px-6 py-3.5 text-base font-medium text-neutral-200 backdrop-blur-3xl">
-                    Sign In
-                    <svg
-                      className="ml-2 h-4 w-4 text-neutral-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </span>
+                  Sign in
                 </Link>
               </>
             )}

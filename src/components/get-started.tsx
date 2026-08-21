@@ -1,27 +1,27 @@
-import React from "react";
+import Link from "next/link";
 
 const GetStarted = () => {
   return (
-    <div className="relative group">
-      <button className="relative inline-block p-px font-semibold leading-6 text-white bg-neutral-900 shadow-2xl cursor-pointer rounded-2xl shadow-emerald-900 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 hover:shadow-emerald-600">
-        <span className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-sky-600 p-[2px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
-        <span className="relative z-10 block px-6 py-3 rounded-2xl bg-neutral-950">
-          <div className="relative z-10 flex items-center space-x-3">
-            <span className="transition-all duration-500 group-hover:translate-x-1.5 group-hover:text-emerald-300">
-              Get Started For Free
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-7 h-7 transition-all duration-500 group-hover:translate-x-1.5 group-hover:text-emerald-300"
-            >
-              <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"></path>
-            </svg>
-          </div>
-        </span>
-      </button>
-    </div>
+    <Link
+      href="/sign-in"
+      className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-white px-6 text-base font-semibold text-black transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-neutral-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+    >
+      Start free
+      <svg
+        aria-hidden
+        viewBox="0 0 16 16"
+        fill="none"
+        className="h-4 w-4 transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1"
+      >
+        <path
+          d="M3 8h10m0 0L9 4m4 4-4 4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </Link>
   );
 };
 

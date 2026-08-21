@@ -12,9 +12,12 @@
     "db:migrate:prod": "cross-env NODE_ENV=production drizzle-kit migrate",
     "db:push": "cross-env NODE_ENV=development drizzle-kit push",
     "db:studio": "cross-env NODE_ENV=development drizzle-kit studio",
-    "db:enable-pgvector": "cross-env NODE_ENV=development tsx scripts/enable-pgvector.ts",
-    "db:apply-email-embeddings": "cross-env NODE_ENV=development tsx scripts/apply-email-embeddings.ts",
-    "db:seed:emails": "cross-env NODE_ENV=development tsx scripts/seed-emails.ts"
+    "db:enable-pgvector": "cross-env NODE_ENV=development node --env-file=.env.development --import tsx scripts/enable-pgvector.ts",
+    "db:enable-pgvector:prod": "cross-env NODE_ENV=production node --env-file=.env.production --import tsx scripts/enable-pgvector.ts",
+    "db:apply-email-embeddings": "cross-env NODE_ENV=development node --env-file=.env.development --import tsx scripts/apply-email-embeddings.ts",
+    "db:apply-email-embeddings:prod": "cross-env NODE_ENV=production node --env-file=.env.production --import tsx scripts/apply-email-embeddings.ts",
+    "db:seed:emails": "cross-env NODE_ENV=development node --env-file=.env.development --import tsx scripts/seed-emails.ts",
+    "db:seed:emails:prod": "cross-env NODE_ENV=production node --env-file=.env.production --import tsx scripts/seed-emails.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.11",

@@ -2,7 +2,6 @@
 
 import { cubicBezier, motion } from "motion/react";
 import Image from "next/image";
-import logo from "../../public/logo-white.png";
 
 export function FeatureCardReply() {
   const variant1 = {
@@ -43,7 +42,7 @@ export function FeatureCardReply() {
       opacity: 1,
       scale: 1.05,
       boxShadow:
-        "rgba(39,245,76,0.15) 10px 20px 70px -20px, rgba(36,42,66,0.04) 0px 10px 24px -8px, rgba(36,42,66,0.06) 0px 1px 4px -1px",
+        "rgba(76,194,233,0.15) 10px 20px 70px -20px, rgba(36,42,66,0.04) 0px 10px 24px -8px, rgba(36,42,66,0.06) 0px 1px 4px -1px",
       transition: {
         delay: 0.05,
         duration: 0.3,
@@ -62,43 +61,44 @@ export function FeatureCardReply() {
   };
 
   return (
-    <div className="relative h-full w-full max-w-[32rem]  transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] md:max-h-[500px]">
+    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
       <motion.div
         variants={containerVariants}
         initial="initial"
         whileHover="whileHover"
         className="flex h-full w-full cursor-pointer flex-col justify-between"
       >
-        <motion.div className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-y-2 overflow-hidden rounded-t-xl p-8">
-          <motion.p
+        <motion.div className="flex min-h-75 w-full cursor-pointer flex-col items-center justify-center gap-y-2 overflow-hidden rounded-t-xl p-6">
+          <motion.div
             variants={variant1}
-            className="w-fit rounded-full border px-2 text-[15px]"
+            className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-neutral-800 px-4 py-2.5"
           >
-            Ask, don't dig
-          </motion.p>
+            <p className="text-sm text-neutral-200">
+              What did I promise Dana for Tuesday?
+            </p>
+          </motion.div>
           <motion.div
             variants={variant2}
-            className="flex max-w-[300px] items-start gap-x-2 rounded-lg border border-neutral-800 bg-neutral-900 p-4"
+            className="mr-auto flex w-fit max-w-[85%] items-start gap-x-2 rounded-2xl rounded-bl-md border border-neutral-800 bg-neutral-900 p-4"
           >
-            <div className="flex h-6 w-6 shrink-0 rounded-full bg-blue-500">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black">
               <Image
                 className="h-full w-full rounded-full object-cover"
-                src={logo}
+                src="/logo-white.png"
                 width={24}
                 height={24}
-                alt="jane"
+                alt=""
               />
             </div>
-            <div>
-              <h3 className="text-base font-semibold">Josh</h3>
-              <p className="text-sm text-neutral-400">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              </p>
-            </div>
+            <p className="text-sm text-neutral-300">
+              You emailed Dana on Friday confirming the draft proposal by Tuesday
+              morning — it&apos;s in your Notion under{" "}
+              <span className="text-[#4CC2E9]">Client work</span>.
+            </p>
           </motion.div>
         </motion.div>
         <div className="flex w-full flex-col items-start border-t border-neutral-800 p-4">
-          <h2 className="text-xl font-semibold">Ask, don't dig</h2>
+          <h2 className="text-xl font-semibold">Ask, don&apos;t dig</h2>
           <p className="text-base font-normal text-neutral-400">
             Relay reads your inbox and calendar so you get an answer, not five
             tabs to check yourself
