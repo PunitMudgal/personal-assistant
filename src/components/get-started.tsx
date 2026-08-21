@@ -4,7 +4,7 @@ const GetStarted = () => {
   return (
     <Link
       href="/sign-in"
-      className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-white px-6 text-base font-semibold text-black transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-neutral-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+      className="group inline-flex h-12 items-center gap-2.5 rounded-full bg-white px-6 text-base font-semibold text-black transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-neutral-200 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
     >
       Start free
       <svg

@@ -22,7 +22,7 @@ const Hero = () => {
 
         {/* main heading */}
         <Reveal delay={100}>
-          <h1 className="max-w-xl text-balance text-5xl md:text-7xl font-bold tracking-tight mb-3 text-transparent bg-clip-text bg-linear-to-r from-white to-[#9B9B9B]">
+          <h1 className="max-w-xl text-balance text-5xl md:text-7xl font-bold tracking-[-0.03em] mb-3 text-transparent bg-clip-text bg-linear-to-r from-white to-[#9B9B9B]">
             Stop switching tabs.
             <br />
             Start asking Relay
@@ -52,6 +52,11 @@ const Hero = () => {
         delay={200}
         className="w-full lg:w-[45%] h-80 md:h-125 lg:h-175 relative mt-16 lg:mt-0 flex items-center justify-center"
       >
+        {/* light emitted by the orb */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#4CC2E9] opacity-[0.05] blur-[110px]"
+        />
         <Orb
           hoverIntensity={2}
           rotateOnHover

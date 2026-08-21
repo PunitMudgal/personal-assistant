@@ -1,4 +1,5 @@
 import Header from "@/components/header";
+import { Grain } from "@/components/grain";
 
 export default function MarketingLayout({
   children,
@@ -14,6 +15,7 @@ export default function MarketingLayout({
         Skip to content
       </a>
       <Header />
+      <Grain />
       <div id="main-content">{children}</div>
     </>
   );

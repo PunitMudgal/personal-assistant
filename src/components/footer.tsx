@@ -1,13 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
 
+const footerLinks = [
+  { label: "Features", href: "/#features" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+];
+
 const Footer = () => {
   return (
-    <footer className="w-full px-6 pb-12">
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 sm:flex-row">
+    <footer className="relative w-full overflow-hidden px-6 pb-14">
+      {/* watermark wordmark */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -bottom-8 select-none text-center text-[22vw] font-bold leading-none tracking-[-0.05em] text-transparent sm:text-[18vw] lg:text-[15rem]"
+        style={{ WebkitTextStroke: "1px rgba(255,255,255,0.045)" }}
+      >
+        Relay
+      </div>
+
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-6 border-t border-white/10 pt-8 sm:flex-row">
         <Link
           href="/"
-          className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] rounded-full"
+          className="flex items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
         >
           <Image
             src="/logo-white.png"
@@ -29,24 +44,15 @@ const Footer = () => {
           aria-label="Footer"
           className="flex items-center gap-5 text-sm text-neutral-500"
         >
-          <Link
-            href="/#features"
-            className="transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] rounded"
-          >
-            Features
-          </Link>
-          <Link
-            href="/privacy"
-            className="transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] rounded"
-          >
-            Privacy
-          </Link>
-          <Link
-            href="/terms"
-            className="transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9] rounded"
-          >
-            Terms
-          </Link>
+          {footerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4CC2E9]"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </footer>

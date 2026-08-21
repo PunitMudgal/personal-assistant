@@ -2,6 +2,7 @@
 
 import { cubicBezier, motion } from "motion/react";
 import Image from "next/image";
+import { SpotlightCard } from "@/components/spotlight-card";
 
 export function FeatureCardReply() {
   const variant1 = {
@@ -61,7 +62,7 @@ export function FeatureCardReply() {
   };
 
   return (
-    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
+    <SpotlightCard>
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -105,6 +106,6 @@ export function FeatureCardReply() {
           </p>
         </div>
       </motion.div>
-    </div>
+    </SpotlightCard>
   );
 }

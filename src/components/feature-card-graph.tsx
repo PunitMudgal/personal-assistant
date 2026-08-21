@@ -1,6 +1,7 @@
 "use client";
 
 import { cubicBezier, motion } from "motion/react";
+import { SpotlightCard } from "@/components/spotlight-card";
 
 export function FeatureCardGraph() {
   const variant1 = {
@@ -54,7 +55,7 @@ export function FeatureCardGraph() {
   };
 
   return (
-    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
+    <SpotlightCard>
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -105,6 +106,6 @@ export function FeatureCardGraph() {
           </p>
         </div>
       </motion.div>
-    </div>
+    </SpotlightCard>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { cubicBezier, motion } from "motion/react";
+import { SpotlightCard } from "@/components/spotlight-card";
 
 const memories = [
   {
@@ -113,7 +114,7 @@ export function FeatureCardSocial() {
   };
 
   return (
-    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset] [border:1px_solid_rgba(255,255,255,.1)]">
+    <SpotlightCard>
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -155,6 +156,6 @@ export function FeatureCardSocial() {
           </p>
         </div>
       </motion.div>
-    </div>
+    </SpotlightCard>
   );
 }

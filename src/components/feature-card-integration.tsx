@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Marquee } from "@/components/ui/marquee";
+import { SpotlightCard } from "@/components/spotlight-card";
 import { motion, useAnimation, useInView } from "motion/react";
 import {
   BarChart,
@@ -123,7 +124,7 @@ export function FeatureCardIntegration() {
   const [randomTiles4] = useState(() => shuffleArray([...tiles], 4));
 
   return (
-    <div className="relative h-full w-full transform-gpu rounded-lg border bg-black [border:1px_solid_rgba(255,255,255,.1)] [box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]">
+    <SpotlightCard>
       <motion.div
         variants={containerVariants}
         initial="initial"
@@ -172,6 +173,6 @@ export function FeatureCardIntegration() {
           </p>
         </div>
       </motion.div>
-    </div>
+    </SpotlightCard>
   );
 }

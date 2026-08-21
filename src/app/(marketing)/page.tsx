@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 
 export default function Home() {
   return (
-    <main className="flex min-h-dvh flex-col bg-black text-white">
+    <main className="flex min-h-dvh flex-col bg-black text-white selection:bg-[#4CC2E9]/30 selection:text-white">
       <Hero />
       <Feature />
       <Cta />
