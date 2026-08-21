@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://relay.app"),
   title: "Relay - Your Personal AI Assistant",
   description:
     "Relay is a personal AI assistant that reads your inbox, checks your calendar, and pulls up your notes — so you can just ask, instead of digging through five apps to find the answer.",

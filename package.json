@@ -26,6 +26,7 @@
     "@auth/drizzle-adapter": "^1.11.2",
     "@neondatabase/serverless": "^1.1.0",
     "@openrouter/ai-sdk-provider": "^3.0.0",
+    "@phosphor-icons/react": "^2.1.10",
     "ai": "^7.0.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

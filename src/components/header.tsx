@@ -5,7 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
-const navLinks = [{ label: "Features", href: "/#features" }];
+const navLinks = [
+  { label: "Benefits", href: "/#benefits" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "FAQ", href: "/#faq" },
+];
 
 const Header = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
